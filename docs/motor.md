@@ -9,9 +9,9 @@ connected to the enable input of the L293D of this specific motor. Make sure
 that this pin is correctly set up according to the [the schematics](https://github.com/JelteDirks/motor-shield-control/blob/aab81d02e55ea8caf1bc7d661d84cc2a877116a5/arduino%20motor%20shield%20schematic.jpeg)
 because you will have to assign it to the correct position on the board (M1-M4).
 
-#### direction
+#### running 
 
-The direction the motor will be running in.
+Status of the motor.
 
 #### pwm
 
