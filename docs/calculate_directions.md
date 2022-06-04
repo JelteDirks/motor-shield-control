@@ -73,3 +73,44 @@ representation:
 Our final number is 01100010 or in decimal: 98. Shifting the number 98 onto the
 shift register will set the above configuration. **Important**: M4 will stall after
 pushing this to the register, both inputs are 0!
+
+Below is an algorithm provided for calculating the byte that has to be put into
+the memory of the shift register. It is important to keep in mind that this 
+calculation has to incorporate the settings for each motor.
+
+```
+update_direction(board)
+    m1_dir <- board.motor(1).direction
+    m2_dir <- board.motor(2).direction
+    m3_dir <- board.motor(3).direction
+    m4_dir <- board.motor(4).direction
+
+    final <- 0b0
+
+    if m1_dir == clockwise
+        final <- final | 4
+    else 
+        final <- final | 8
+
+    if m2_dir == clockwise
+        final <- final | 2 
+    else 
+        final <- final | 16 
+
+    if m3_dir == clockwise
+        final <- final | 1 
+    else 
+        final <- final | 64 
+
+    if m4_dir == clockwise
+        final <- final | 32 
+    else 
+        final <- final | 128 
+
+    return final
+```
+
+
+
+
+

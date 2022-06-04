@@ -31,7 +31,7 @@ from the LSB side of the byte.
 Algorithm to push a byte onto the register:
 
 ```
-PUSH_REG(pattern, data, clock, latch):
+push_reg(pattern, data, clock, latch):
     GPIO.set(latch, LOW) // break connection with memory
     b <- 1 // start with LSB (bit pattern: 0b00000001)
     while b <= 0b10000000 // while b <= 128, stop after 7 bit shifts
