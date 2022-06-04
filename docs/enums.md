@@ -1,6 +1,6 @@
 ## Enums 
 
-#### BoardType
+### BoardType
 
 ##### BCM (default)
 
@@ -10,7 +10,7 @@ The BCM pin numbering.
 
 The pin numbering as indicated on the board.
 
-#### MotorError
+### MotorError
 
 ##### PinNotSet
 
@@ -24,7 +24,7 @@ The speed or pwm setting is set to 0.
 
 No motor could be found for this operation.
 
-#### Direction
+### Direction
 
 ##### Clockwise
 
