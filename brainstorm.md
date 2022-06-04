@@ -14,14 +14,71 @@ What I want as a consumer of this lib:
 How do I want to do this as a user?
 
 ```
-board <- create_board()
-latch <- 0
-clock <- 0
-data <- 0
+board <- create_board("BCM")
+latch <- 1
+clock <- 2
+data <- 3
 board.set_shift_register_pins(latch, clock, data)
-motor1 <- create_motor()
+motor1_pin <- 5
+motor1 <- create_motor(pin)
 board.add_motor(motor1, position=1)
 board.motor(1).start()
 sleep(100)
 board.motor(1).stop()
+```
+
+Short description on how to achieve code with routines
+
+```
+create_board(board_type):
+    set_pin_numbering(board_type)
+```
+
+```
+set_shift_register_pins(latch, clock, data):
+    set_latch(latch)
+    set_clock(clock)
+    set_data(data)
+```
+
+```
+create_motor(pin):
+    set_pin(pin)
+    direction <- clockwise
+    pwm <- 100
+    is_running <- false
+```
+
+```
+board::add_motor(&motor, position):
+    self.set_motor(position, &motor)  
+```
+
+```
+motor(position):
+    return self.get_motor(position)
+```
+
+```
+Motor {
+    pin
+    direction
+    pwm
+    is_running
+}
+```
+
+```
+Board {
+    motors: [Option<Motor>; 4]
+    register: Register
+}
+```
+
+```
+Register {
+    latch_pin
+    clock_pin
+    data_pin
+}
 ```
