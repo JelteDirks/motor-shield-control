@@ -50,12 +50,12 @@ create_motor(pin):
 ```
 
 ```
-board::add_motor(&motor, position):
+board.add_motor(&motor, position):
     self.set_motor(position, &motor)  
 ```
 
 ```
-motor(position):
+board.motor(position):
     return self.get_motor(position)
 ```
 
@@ -66,6 +66,24 @@ Motor {
     pwm
     is_running
 }
+```
+
+```
+/*
+Motor can only start if a pin is set.
+Direction has to be set independently, default=Clockwise
+PWM has to be set independently, default=100(max)
+*/
+Motor.start():
+    if pwm is max:
+        set GPIO.SET(pin, HIGH)
+    else
+        set GPIO.PWM(pin, PWM)
+```
+
+```
+Motor.stop():
+    GPIO.SET(pin, LOW)
 ```
 
 ```
