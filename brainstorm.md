@@ -36,9 +36,9 @@ create_board(board_type):
 
 ```
 set_shift_register_pins(latch, clock, data):
-    set_latch(latch)
-    set_clock(clock)
-    set_data(data)
+    set_latch(latch)    // RCLK
+    set_clock(clock)    // SRCLK
+    set_data(data)      // SER
 ```
 
 ```
