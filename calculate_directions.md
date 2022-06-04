@@ -3,7 +3,7 @@
 Because the shift register of the arduino motor shield decides which direction
 all four motors go. We have to shift the correct byte into the shift register
 before latching it to the data lines. If you continue reading this document,
-I suggest you have [https://github.com/JelteDirks/motor-shield-control/blob/aab81d02e55ea8caf1bc7d661d84cc2a877116a5/arduino%20motor%20shield%20schematic.jpeg](the schematics)
+I suggest you have [the schematics](https://github.com/JelteDirks/motor-shield-control/blob/aab81d02e55ea8caf1bc7d661d84cc2a877116a5/arduino%20motor%20shield%20schematic.jpeg)
 open as it might help you understand it better.
 
 The directions of the motor spin is decided by the direction of the current
@@ -71,5 +71,5 @@ representation:
 | Final |           | 0       | 1       | 1       | 0       | 0       | 0       | 1       | 0       |
 
 Our final number is 01100010 or in decimal: 98. Shifting the number 98 onto the
-shift register will set the above configuration. Important: M4 will stall after
+shift register will set the above configuration. **Important**: M4 will stall after
 pushing this to the register, both inputs are 0!
