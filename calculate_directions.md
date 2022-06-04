@@ -49,3 +49,25 @@ above:
 | M4    | C         | 0       | 0       | 0       | 0       | 0       | 1       | 0       | 0       |
 | M4    | CC        | 0       | 0       | 0       | 0       | 0       | 0       | 0       | 1       |
 
+Now as stated earlier, the motors do not move if both inputs are high or low
+simultaneously. This means that to set certain directions, we can not just
+shift the number for the corresponding motor with direction onto the shift
+register, since the other motors will stall. Using the bitwise OR operation
+on the numbers, we can set multiple motors to go in some direction. An example:
+
+I want to set motors M1 and M2 to clockwise, and motor M3 to counter clockwise.
+To achieve this, we take the number for the motor and direction, and we bitwise
+OR these with eachother. In code we can use the decimal notation to make it 
+easier, but for illustration purposes we will demonstrate with the binary 
+representation:
+
+|       | Direction | M3A(QA) | M2A(QB) | M1A(QC) | M1B(QD) | M2B(QE) | M4A(QF) | M3B(QG) | M4B(QH) |
+|-------|-----------|---------|---------|---------|---------|---------|---------|---------|---------|
+| M1    | C         | 0       | 0       | 1       | 0       | 0       | 0       | 0       | 0       |
+| M2    | C         | 0       | 1       | 0       | 0       | 0       | 0       | 0       | 0       |
+| M3    | CC        | 0       | 0       | 0       | 0       | 0       | 0       | 1       | 0       |
+| Final |           | 0       | 1       | 1       | 0       | 0       | 0       | 1       | 0       |
+
+Our final number is 01100010 or in decimal: 98. Shifting the number 98 onto the
+shift register will set the above configuration. Important: M4 will stall after
+pushing this to the register, both inputs are 0!
