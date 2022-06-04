@@ -45,3 +45,15 @@ PUSH_REG(pattern, data, clock, latch):
         b <- b << 1 // shift b left once, testing the next significant bit
     GPIO.set(latch, HIGH) // save the byte into memory, put it on the data lines
 ```
+
+An explanation of the algorithm above goes as follows:
+We start by setting the latch low. Then we initialize a new bit pattern
+with 1, which means the LSB is 1, the rest is 0. While this bit pattern is 128
+or lower, which is the break off point for our byte, repeat the following. Set
+the clock low, use bitwise AND with the requested pattern. Since all other bits
+are 0, only the LSB bit can become 1. This only happens if that bit in the
+pattern was also 1. If that bit was 1, it will be the same as b, so we write
+high on the data line for this case. If not, the bit was 0 in the pattern and
+we write low on the data line. We set the clock to high, and with the rising
+edge, the data is pushed into the shift register. We bitwise shift b one to the
+left to do exactly the same with the next most significant bit position.
