@@ -26,3 +26,22 @@ Note that you technically shift your least significant bit first (LSB). At least
 in the representation that we advocating here, the least significant bit is
 QH and the most significant bit is QA. You therefore need to start pushing in
 from the LSB side of the byte.
+
+
+Algorithm to push a byte onto the register:
+
+```
+PUSH_REG(pattern, data, clock, latch):
+    GPIO.set(latch, LOW) // break connection with memory
+    b <- 1 // start with LSB (bit pattern: 0b00000001)
+    while b <= 0b10000000 // while b <= 128, stop after 7 bit shifts
+        GPIO.set(clock, LOW) // start with a LOW clock
+        c <- b & pattern // only keep bit b 
+        if c == b // if c == b, bit b in pattern was 1 
+            GPIO.set(data, HIGH) // we should push HIGH into the register
+        else // c != b, bit b in pattern was 0
+            GPIO.set(data, LOW) // we should push LOW into the register
+        GPIO.set(clock, HIGH) // set clock to HIGH, rising edge pushes bit
+        b <- b << 1 // shift b left once, testing the next significant bit
+    GPIO.set(latch, HIGH) // save the byte into memory, put it on the data lines
+```
