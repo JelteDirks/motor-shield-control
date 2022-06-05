@@ -133,13 +133,13 @@ impl AMSBoard {
         };
     }
 
-    pub fn change_motor_pwm_duration(&mut self, p: usize, pwm: Duration) -> Result<(), MotorError> {
-        if pwm > Duration::from_millis(100) {
+    pub fn change_motor_pulse_width(&mut self, p: usize, cycle: Duration) -> Result<(), MotorError> {
+        if cycle > Duration::from_millis(100) {
             return Err(MotorError::PWMDurationTooHigh);
         }
 
         match &mut self.motors[p -1] {
-            Some(motor) => motor.set_pwm_duration(pwm),
+            Some(motor) => motor.set_pwm_cycle(cycle),
             _ => return Err(MotorError::MotorNotFound),
         }
 
@@ -204,8 +204,20 @@ impl AMSBoard {
 
         self.update_directions();
         self.update_shift_register();
+        
+        for m in self.motors.iter_mut() {
+            let motor = match m {
+                Some(m) => m,
+                _ => panic!("first"),
+            };
 
-        // todo!("push values into shift register and set motor pwm values");
+            let pin = match motor.pin.as_mut() {
+                Some(p) => p,
+                _ => panic!("second"),
+            };
+
+            pin.set_pwm(motor.pwm_cycle, motor.pulse_width);
+        }
 
         return Ok(());
     }

@@ -2,9 +2,9 @@ use rppal::gpio::{OutputPin, Gpio, Error as GpioError};
 use core::time::Duration;
 
 pub struct Motor {
-    pin: Option<OutputPin>, 
-    pwm_period: Duration,
-    pwm_duration: Duration,
+    pub pin: Option<OutputPin>, 
+    pub pwm_cycle: Duration,
+    pub pulse_width: Duration,
     direction: Direction,
     status:Status,
 }
@@ -13,8 +13,8 @@ impl Motor {
     pub fn new() -> Motor {
         return Motor {
             pin: None,
-            pwm_period: Duration::from_millis(100),
-            pwm_duration: Duration::from_millis(100),
+            pwm_cycle: Duration::from_millis(100),
+            pulse_width: Duration::from_millis(100),
             direction: Direction::Clockwise,
             status: Status::Idle,
         }
@@ -46,12 +46,20 @@ impl Motor {
         return Ok(());
     }
 
-    pub fn set_pwm_period(&mut self, pp: Duration) {
-        self.pwm_period = pp;
+    pub fn get_pwm_cycle(&self) -> Duration {
+        return self.pwm_cycle;
     }
 
-    pub fn set_pwm_duration(&mut self, pd: Duration) {
-        self.pwm_duration = pd;
+    pub fn get_pulse_width(&self) -> Duration {
+        return self.pulse_width;
+    }
+
+    pub fn set_pwm_cycle(&mut self, pp: Duration) {
+        self.pwm_cycle = pp;
+    }
+
+    pub fn set_pulse_width(&mut self, pd: Duration) {
+        self.pulse_width = pd;
     }
 
     pub fn get_direction(&self) -> Direction {
