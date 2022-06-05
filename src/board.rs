@@ -119,4 +119,79 @@ mod tests {
         let direction: u8 = board.calculate_directions();
         assert_eq!(16, direction);
     }
+
+    #[test]
+    fn set_m3direction_test() {
+        let mut board = AMSBoard::new(BoardType::BCM);
+        let mut motor = Motor::new();
+        board.set_motor(motor, 3);
+        let direction: u8 = board.calculate_directions();
+        assert_eq!(1, direction);
+        match board.get_motor(3) {
+            Ok(m) => m.set_direction(Direction::Counterclockwise),
+            Err(e) => panic!("{:?}",e),
+        }
+        let direction: u8 = board.calculate_directions();
+        assert_eq!(64, direction);
+    }
+    
+    #[test]
+    fn set_m4direction_test() {
+        let mut board = AMSBoard::new(BoardType::BCM);
+        let mut motor = Motor::new();
+        board.set_motor(motor, 4);
+        let direction: u8 = board.calculate_directions();
+        assert_eq!(32, direction);
+        match board.get_motor(4) {
+            Ok(m) => m.set_direction(Direction::Counterclockwise),
+            Err(e) => panic!("{:?}",e),
+        }
+        let direction: u8 = board.calculate_directions();
+        assert_eq!(128, direction);
+    }
+
+    #[test]
+    fn composite_direction_test() {
+        let mut board = AMSBoard::new(BoardType::BCM);
+        let mut motor4 = Motor::new();
+        board.set_motor(motor4, 4);
+        let mut motor2 = Motor::new();
+        board.set_motor(motor2, 2);
+        let direction: u8 = board.calculate_directions();
+        assert_eq!(0b00100010, direction);
+    }
+    
+    #[test]
+    fn all_motor_clockwise_test() {
+        let mut board = AMSBoard::new(BoardType::BCM);
+        let mut motor1 = Motor::new();
+        board.set_motor(motor1, 1);
+        let mut motor2 = Motor::new();
+        board.set_motor(motor2, 2);
+        let mut motor3 = Motor::new();
+        board.set_motor(motor3, 3);
+        let mut motor4 = Motor::new();
+        board.set_motor(motor4, 4);
+        let direction: u8 = board.calculate_directions();
+        assert_eq!(0b00100111, direction);
+    }
+    
+    #[test]
+    fn all_motor_cclockwise_test() {
+        let mut board = AMSBoard::new(BoardType::BCM);
+        let mut motor1 = Motor::new();
+        motor1.set_direction(Direction::Counterclockwise);
+        board.set_motor(motor1, 1);
+        let mut motor2 = Motor::new();
+        motor2.set_direction(Direction::Counterclockwise);
+        board.set_motor(motor2, 2);
+        let mut motor3 = Motor::new();
+        motor3.set_direction(Direction::Counterclockwise);
+        board.set_motor(motor3, 3);
+        let mut motor4 = Motor::new();
+        motor4.set_direction(Direction::Counterclockwise);
+        board.set_motor(motor4, 4);
+        let direction: u8 = board.calculate_directions();
+        assert_eq!(0b11011000, direction);
+    }
 }
