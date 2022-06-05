@@ -1,5 +1,5 @@
 [package]
-name = "motor-shield-control"
+name = "motor_shield_control"
 version = "0.1.0"
 edition = "2021"
 
