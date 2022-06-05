@@ -6,6 +6,7 @@ pub struct AMSBoard {
     dirLat: Option<u8>,
     motors: [Option<Motor>; 4],
     _type: BoardType,
+    directions: u8,
 }
   
 impl AMSBoard {
@@ -16,6 +17,7 @@ impl AMSBoard {
             dirLat: None,
             motors: [None, None, None, None],
             _type: t,
+            directions: 0,
         }
     }
 
@@ -78,8 +80,38 @@ impl AMSBoard {
 
         return m1_dir | m2_dir | m3_dir | m4_dir; 
     }
-}
 
+    pub fn get_directions(&self) -> u8 {
+        return self.directions; 
+    }
+    
+    fn update_directions (&mut self) {
+        self.directions = self.calculate_directions();
+        self.update_motors();
+    }
+
+    pub fn change_motor_direction(&mut self, p: usize, d: Direction) -> Result<(), MotorError> {
+        match &mut self.motors[p - 1] {
+            Some(motor) => motor.set_direction(d),
+            _ => return Err(MotorError::MotorNotFound),
+        };
+        self.update_directions();
+        return Ok(());
+    }
+
+    pub fn change_motor_pwm(&mut self, p: usize, pwm: u8) -> Result<(), MotorError> {
+        match &mut self.motors[p -1] {
+            Some(motor) => motor.set_pwm(pwm),
+            _ => return Err(MotorError::MotorNotFound),
+        }
+        self.update_motors();
+        return Ok(());
+    }
+
+    fn update_motors(&self) {
+        todo!("update the motors using a gpio library")
+    }
+}
 
 pub enum BoardType {
     BCM,
@@ -195,3 +227,4 @@ mod tests {
         assert_eq!(0b11011000, direction);
     }
 }
+
