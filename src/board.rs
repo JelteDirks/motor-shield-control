@@ -119,7 +119,6 @@ impl AMSBoard {
     
     fn update_directions (&mut self) {
         self.directions = self.calculate_directions();
-        self.update_motors();
     }
 
     pub fn change_motor_direction(&mut self, p: usize, d: Direction) -> Result<(), MotorError> {
@@ -136,11 +135,53 @@ impl AMSBoard {
             Some(motor) => motor.set_pwm(pwm),
             _ => return Err(MotorError::MotorNotFound),
         }
-        self.update_motors();
         return Ok(());
     }
 
-    fn update_motors(&self) -> Result<(), BoardError> {
+    fn register_pins_are_valid(&self) -> bool {
+        if self.pin_clk.is_none() {
+            return false;
+        }
+        
+        if self.pin_ser.is_none() {
+            return false;
+        }
+
+        if self.pin_lat.is_none() {
+            return false;
+        }
+
+        return true;
+    }
+
+    fn update_shift_register(&mut self) {
+        if !self.register_pins_are_valid() {
+            panic!("register pins are not set correctly");
+        }
+
+        let latch = self.pin_lat.as_mut().unwrap();
+        let serial = self.pin_ser.as_mut().unwrap();
+        let clock = self.pin_clk.as_mut().unwrap();
+
+        latch.set_low();
+
+        let mut b: u16 = 0b1;
+        while b == 128 {
+            clock.set_low();
+            let c: u16 = b & (self.directions as u16);
+            if c == b {
+                serial.set_high();
+            } else {
+                serial.set_low();
+            }
+            clock.set_high();
+            b = b << 1;
+        }        
+
+        latch.set_high();
+    }
+
+    pub fn update_motors(&mut self) -> Result<(), BoardError> {
         if self.pin_lat.is_none() {
             return Err(BoardError::LatchPinNotSet); 
         }
@@ -152,6 +193,11 @@ impl AMSBoard {
         if self.pin_clk.is_none() {
             return Err(BoardError::ClockPinNotSet);
         }
+
+        self.update_directions();
+        self.update_shift_register();
+
+        // todo!("push values into shift register and set motor pwm values");
 
         return Ok(());
     }
