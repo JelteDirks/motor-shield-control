@@ -1,9 +1,13 @@
 use crate::motor::{Motor, MotorError, Direction};
+use rppal::gpio::{OutputPin, Gpio, Pin, Error as GpioError};
 
 pub struct AMSBoard {    
     dir_ser: Option<u8>,
     dir_clk: Option<u8>,
     dir_lat: Option<u8>,
+    pin_ser: Option<OutputPin>,
+    pin_clk: Option<OutputPin>,
+    pin_lat: Option<OutputPin>,
     motors: [Option<Motor>; 4],
     _type: BoardType,
     directions: u8,
@@ -15,6 +19,9 @@ impl AMSBoard {
             dir_ser: None,
             dir_clk: None,
             dir_lat: None,
+            pin_ser: None,
+            pin_clk: None,
+            pin_lat: None,
             motors: [None, None, None, None],
             _type: t,
             directions: 0,
@@ -44,6 +51,8 @@ impl AMSBoard {
         self.dir_ser = Some(ser);
         self.dir_clk = Some(clk);
         self.dir_lat = Some(lat);
+
+        
     }
 
     fn calculate_directions(&self) -> u8 {
@@ -109,9 +118,42 @@ impl AMSBoard {
         return Ok(());
     }
 
-    fn update_motors(&self) {
-        //TODO: todo!("update the motors using a gpio library")
+    fn update_motors(&self) -> Result<(), BoardError> {
+        if self.dir_lat.is_none() {
+            return Err(BoardError::LatchPinNotSet); 
+        }
+
+        if self.dir_ser.is_none() {
+            return Err(BoardError::SerialPinNotSet);
+        }
+
+        if self.dir_clk.is_none() {
+            return Err(BoardError::ClockPinNotSet);
+        }
+
+        let gpio_res: Result<Gpio, GpioError> = Gpio::new(); 
+        let gpio = match gpio_res {
+            Ok(g) => g,
+            Err(e) => panic!("{:?}", e),
+        };
+
+        let latch_pin = gpio.get(self.dir_lat.unwrap());
+        let serial_pin = gpio.get(self.dir_ser.unwrap());
+        let clock_pin = gpio.get(self.dir_clk.unwrap());
+
+        let latch_output = match latch_pin {
+            Ok(p) => p.into_output(),
+            Err(e) => panic!("{:?}", e),
+        };
+
+        return Ok(());
     }
+}
+
+pub enum BoardError {
+    LatchPinNotSet,
+    SerialPinNotSet,
+    ClockPinNotSet,
 }
 
 pub enum BoardType {
