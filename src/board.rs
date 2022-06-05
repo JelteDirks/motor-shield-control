@@ -52,7 +52,29 @@ impl AMSBoard {
         self.dir_clk = Some(clk);
         self.dir_lat = Some(lat);
 
-        
+        let gpio_res: Result<Gpio, GpioError> = Gpio::new(); 
+        let gpio = match gpio_res {
+            Ok(g) => g,
+            Err(e) => panic!("{:?}", e),
+        };
+
+        let latch_pin = gpio.get(lat);
+        let serial_pin = gpio.get(ser);
+        let clock_pin = gpio.get(clk); 
+
+        match clock_pin {
+            Ok(p) => self.pin_clk = Some(p.into_output()),
+            Err(e) => panic!("{:?}", e),
+        };
+
+        match latch_pin {
+            Ok(p) => self.pin_lat = Some(p.into_output()),
+            Err(e) => panic!("{:?}", e),
+        };
+        match serial_pin {
+            Ok(p) => self.pin_ser = Some(p.into_output()),
+            Err(e) => panic!("{:?}", e),
+        };
     }
 
     fn calculate_directions(&self) -> u8 {
@@ -119,32 +141,17 @@ impl AMSBoard {
     }
 
     fn update_motors(&self) -> Result<(), BoardError> {
-        if self.dir_lat.is_none() {
+        if self.pin_lat.is_none() {
             return Err(BoardError::LatchPinNotSet); 
         }
 
-        if self.dir_ser.is_none() {
+        if self.pin_ser.is_none() {
             return Err(BoardError::SerialPinNotSet);
         }
 
-        if self.dir_clk.is_none() {
+        if self.pin_clk.is_none() {
             return Err(BoardError::ClockPinNotSet);
         }
-
-        let gpio_res: Result<Gpio, GpioError> = Gpio::new(); 
-        let gpio = match gpio_res {
-            Ok(g) => g,
-            Err(e) => panic!("{:?}", e),
-        };
-
-        let latch_pin = gpio.get(self.dir_lat.unwrap());
-        let serial_pin = gpio.get(self.dir_ser.unwrap());
-        let clock_pin = gpio.get(self.dir_clk.unwrap());
-
-        let latch_output = match latch_pin {
-            Ok(p) => p.into_output(),
-            Err(e) => panic!("{:?}", e),
-        };
 
         return Ok(());
     }
