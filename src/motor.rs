@@ -1,6 +1,10 @@
+use rppal::gpio::{OutputPin, Gpio, Error as GpioError};
+use core::time::Duration;
+
 pub struct Motor {
-    pin: u8,
-    pwm: u8,
+    pin: Option<OutputPin>, 
+    pwm_period: Duration,
+    pwm_duration: Duration,
     direction: Direction,
     status:Status,
 }
@@ -8,8 +12,9 @@ pub struct Motor {
 impl Motor {
     pub fn new() -> Motor {
         return Motor {
-            pin: 0,
-            pwm: 100,
+            pin: None,
+            pwm_period: Duration::from_millis(100),
+            pwm_duration: Duration::from_millis(100),
             direction: Direction::Clockwise,
             status: Status::Idle,
         }
@@ -17,7 +22,6 @@ impl Motor {
 
     pub fn is_running(&self) -> bool {
         match self.status {
-            Status::Running => return true,
             Status::PWM => return true,
             _ => return false,
         }
@@ -27,12 +31,27 @@ impl Motor {
         self.direction = d;
     }
 
-    pub fn set_pin(&mut self, p: u8) {
-        self.pin = p;
+    pub fn set_pin(&mut self, p: u8) -> Result<(), GpioError> {
+        let gpio = Gpio::new();
+        let gpio_pin = match gpio {
+            Ok(gp) => gp,
+            Err(e) => panic!("{:?}", e),
+        };
+
+        match gpio_pin.get(p) {
+            Ok(pin) => self.pin = Some(pin.into_output()),
+            Err(e) => panic!("{:?}", e),
+        };
+
+        return Ok(());
     }
 
-    pub fn set_pwm(&mut self, pwm: u8) {
-        self.pwm = pwm;
+    pub fn set_pwm_period(&mut self, pp: Duration) {
+        self.pwm_period = pp;
+    }
+
+    pub fn set_pwm_duration(&mut self, pd: Duration) {
+        self.pwm_duration = pd;
     }
 
     pub fn get_direction(&self) -> Direction {
@@ -48,7 +67,6 @@ pub enum Direction {
 
 #[derive(Debug)]
 pub enum Status {
-    Running,
     PWM,
     Idle
 }
@@ -59,4 +77,5 @@ pub enum MotorError {
     SpeedIsZero,
     MotorNotFound,
     MotorIndexOutOfBounds,
+    PWMDurationTooHigh,
 }

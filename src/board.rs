@@ -1,5 +1,6 @@
 use crate::motor::{Motor, MotorError, Direction};
-use rppal::gpio::{OutputPin, Gpio, Pin, Error as GpioError};
+use rppal::gpio::{OutputPin, Gpio, Error as GpioError};
+use core::time::Duration;
 
 pub struct AMSBoard {    
     dir_ser: Option<u8>,
@@ -123,18 +124,25 @@ impl AMSBoard {
 
     pub fn change_motor_direction(&mut self, p: usize, d: Direction) -> Result<(), MotorError> {
         match &mut self.motors[p - 1] {
-            Some(motor) => motor.set_direction(d),
+            Some(motor) => {
+                motor.set_direction(d);
+                self.update_directions();
+                return Ok(());
+            },
             _ => return Err(MotorError::MotorNotFound),
         };
-        self.update_directions();
-        return Ok(());
     }
 
-    pub fn change_motor_pwm(&mut self, p: usize, pwm: u8) -> Result<(), MotorError> {
+    pub fn change_motor_pwm_duration(&mut self, p: usize, pwm: Duration) -> Result<(), MotorError> {
+        if pwm > Duration::from_millis(100) {
+            return Err(MotorError::PWMDurationTooHigh);
+        }
+
         match &mut self.motors[p -1] {
-            Some(motor) => motor.set_pwm(pwm),
+            Some(motor) => motor.set_pwm_duration(pwm),
             _ => return Err(MotorError::MotorNotFound),
         }
+
         return Ok(());
     }
 
