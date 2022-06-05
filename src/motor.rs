@@ -51,4 +51,5 @@ pub enum MotorError {
     PinNotSet,
     SpeedIsZero,
     MotorNotFound,
+    MotorIndexOutOfBounds,
 }
