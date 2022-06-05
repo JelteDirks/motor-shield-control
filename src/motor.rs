@@ -15,11 +15,24 @@ impl Motor {
         }
     }
 
-    pub fn is_running(mut self) -> bool {
+    pub fn is_running(&self) -> bool {
         match self.status {
             Status::Running => return true,
-            _ => return false
+            Status::PWM => return true,
+            _ => return false,
         }
+    }
+
+    pub fn set_direction(&mut self, d: Direction) {
+        self.direction = d;
+    }
+
+    pub fn set_pin(&mut self, p: u8) {
+        self.pin = p;
+    }
+
+    pub fn set_pwm(&mut self, pwm: u8) {
+        self.pwm = pwm;
     }
 }
 
