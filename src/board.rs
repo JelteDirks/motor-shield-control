@@ -35,6 +35,7 @@ impl AMSBoard {
         }
 
         self.motors[n - 1] = Some(m);
+        self.update_directions();
 
         return Ok(true);
     }
@@ -109,7 +110,7 @@ impl AMSBoard {
     }
 
     fn update_motors(&self) {
-        todo!("update the motors using a gpio library")
+        //TODO: todo!("update the motors using a gpio library")
     }
 }
 
