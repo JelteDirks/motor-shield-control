@@ -1,9 +1,9 @@
 use crate::motor::{Motor, MotorError, Direction};
 
 pub struct AMSBoard {    
-    dirSer: Option<u8>,
-    dirClk: Option<u8>,
-    dirLat: Option<u8>,
+    dir_ser: Option<u8>,
+    dir_clk: Option<u8>,
+    dir_lat: Option<u8>,
     motors: [Option<Motor>; 4],
     _type: BoardType,
     directions: u8,
@@ -12,9 +12,9 @@ pub struct AMSBoard {
 impl AMSBoard {
     pub fn new(t: BoardType) -> AMSBoard {
         return AMSBoard {
-            dirSer: None,
-            dirClk: None,
-            dirLat: None,
+            dir_ser: None,
+            dir_clk: None,
+            dir_lat: None,
             motors: [None, None, None, None],
             _type: t,
             directions: 0,
@@ -22,9 +22,9 @@ impl AMSBoard {
     }
 
     pub fn get_motor(&mut self, n: usize) -> Result<&mut Motor, MotorError> {
-        let motorOpt = &mut self.motors[n - 1];
-        match motorOpt {
-            Some(motor) => return Ok(motor),
+        let motor = &mut self.motors[n - 1];
+        match motor {
+            Some(m) => return Ok(m),
             None => return Err(MotorError::MotorNotFound),
         }
     }
@@ -41,9 +41,9 @@ impl AMSBoard {
     }
 
     pub fn set_shift_register(&mut self, ser: u8, clk: u8, lat: u8) {
-        self.dirSer = Some(ser);
-        self.dirClk = Some(clk);
-        self.dirLat = Some(lat);
+        self.dir_ser = Some(ser);
+        self.dir_clk = Some(clk);
+        self.dir_lat = Some(lat);
     }
 
     fn calculate_directions(&self) -> u8 {
