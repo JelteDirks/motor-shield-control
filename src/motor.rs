@@ -34,19 +34,26 @@ impl Motor {
     pub fn set_pwm(&mut self, pwm: u8) {
         self.pwm = pwm;
     }
+
+    pub fn get_direction(&self) -> Direction {
+        return self.direction;
+    }
 }
 
+#[derive(Clone, Copy)]
 pub enum Direction {
     Clockwise,
     Counterclockwise
 }
 
+#[derive(Debug)]
 pub enum Status {
     Running,
     PWM,
     Idle
 }
 
+#[derive(Debug)]
 pub enum MotorError {
     PinNotSet,
     SpeedIsZero,
