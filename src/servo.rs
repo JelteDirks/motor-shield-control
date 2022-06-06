@@ -33,12 +33,35 @@ impl Servo {
             }
         }
     }
+
+    pub fn set_angle(&mut self, a: u16) -> Result<(), ServoError> {
+        let width = ServoConfig::calc_width_from_angle(a);
+
+        if self.pin.is_none() {
+            return Err(ServoError::PinNotSet);
+        }
+
+        let pin = self.pin.as_mut().unwrap();
+        let cfg = ServoConfig {
+            cycle: Duration::from_millis(20),
+            width: width,
+            angle: a
+        };
+
+        pin.set_pwm(cfg.cycle, cfg.width);
+
+        return Ok(());
+    }
+}
+
+pub enum ServoError {
+    PinNotSet,
 }
 
 pub struct ServoConfig {
     cycle: Duration,
     width: Duration,
-    angle: u8
+    angle: u16
 }
 
 impl ServoConfig {
@@ -64,11 +87,11 @@ impl ServoConfig {
     }
 
     pub fn new_angle(a: u16) -> ServoConfig {
-        let width = ServoConfig::calc_angle(a);
-        return ServoConfig::new(Duration::from_micros(width));
+        let width = ServoConfig::calc_width_from_angle(a);
+        return ServoConfig::new(width);
     }
 
-    fn calc_angle(a: u16) -> u64 {
+    fn calc_width_from_angle(a: u16) -> Duration {
         const maxAngle: u16 = 180;
         const min: f32 = 1000.0;
         const max: f32 = 2000.0;
@@ -82,7 +105,7 @@ impl ServoConfig {
         let scalar: f32 = prcnt * (range as f32);
         let width: u64 = (min as u64) + (scalar as u64);
 
-        return width;
+        return Duration::from_micros(width);
     }
 }
 
