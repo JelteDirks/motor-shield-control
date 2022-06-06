@@ -201,7 +201,7 @@ impl AMSBoard {
         self.update_shift_register();
         
         for m in self.motors.iter_mut() {
-            let motor = match m {
+            let motor = match m.as_mut() {
                 Some(m) => m,
                 _ => panic!("motor not set correctly"),
             };
