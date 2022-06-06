@@ -53,6 +53,14 @@ impl Servo {
 
         return Ok(());
     }
+
+    pub fn get_pulse_width(self) -> Duration {
+        return self.config.width;
+    }
+
+    pub fn get_angle(self) -> u16 {
+        return self.config.angle;
+    }
 }
 
 pub enum ServoError {
