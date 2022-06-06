@@ -1,10 +1,38 @@
-use rppal::gpio::{OutputPin};
+use rppal::gpio::{OutputPin, Gpio};
 use std::time::Duration;
 
 pub struct Servo {
     pin: Option<OutputPin>,
-    angle: u8,
     config: ServoConfig,
+}
+
+impl Servo {
+    pub fn new(pin: u8) -> Servo  {
+        let gpio = match Gpio::new() {
+            Ok(g) => g,
+            Err(e) => panic!("{:?}", e),
+        };
+
+        let gpio_pin = match gpio.get(pin) {
+            Ok(gp) => gp,
+            Err(e) => panic!("{:?}", e),
+        };
+
+        const cycle: Duration = Duration::from_millis(20);
+        const width: Duration = Duration::from_micros(1500);
+
+        let mut output_pin = gpio_pin.into_output_low();
+        output_pin.set_pwm(cycle, width);
+
+        return Servo {
+            pin: Some(output_pin),
+            config: ServoConfig {
+                cycle: Duration::from_millis(20),
+                width: Duration::from_micros(1500),
+                angle: 90,
+            }
+        }
+    }
 }
 
 pub struct ServoConfig {
