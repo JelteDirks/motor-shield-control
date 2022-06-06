@@ -35,20 +35,55 @@ impl ServoConfig {
         return ServoConfig::new(w);
     }
 
-    pub fn new_angle(a: u8) -> ServoConfig {
-        let maxAngle: u16 = 180;
-        let min: u16 = 1000;
-        let max: u16 = 2000;
+    pub fn new_angle(a: u16) -> ServoConfig {
+        const maxAngle: u16 = 180;
+        const min: f32 = 1000.0;
+        const max: f32 = 2000.0;
 
-        if (a as u16) > maxAngle {
+        if a > maxAngle {
             panic!("angle can be at most 180");
         }
 
-        let range: u16 = max - min;
-        let prcnt: u16 = (a as u16) / maxAngle;
-        let scalar: u16 = prcnt * range;
-        let width: u64 = (min + scalar).into();
+        let range: f32 = max - min;
+        let prcnt: f32 = (a as f32) / (maxAngle as f32); 
+        let scalar: f32 = prcnt * (range as f32);
+        let width: u64 = (min as u64) + (scalar as u64);
 
         return ServoConfig::new(Duration::from_micros(width));
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn test_max_angle_calc() {
+        let cfg = ServoConfig::new_angle(180);
+        assert_eq!(cfg.width, Duration::from_micros(2000)); 
+    }
+
+    #[test]
+    fn test_90_angle_calc() {
+        let cfg = ServoConfig::new_angle(90);
+        assert_eq!(cfg.width, Duration::from_micros(1500)); 
+    }
+
+    #[test]
+    fn test_min_angle_calc() {
+        let cfg = ServoConfig::new_angle(0);
+        assert_eq!(cfg.width, Duration::from_micros(1000));
+    }
+
+    #[test]
+    fn test_arbirary_angles() {
+        let cfg = ServoConfig::new_angle(52);
+        assert_eq!(cfg.width, Duration::from_micros(1288));
+    }
+
+    #[test]
+    fn test_arbirary_angles2() {
+        let cfg = ServoConfig::new_angle(134);
+        assert_eq!(cfg.width, Duration::from_micros(1744));
     }
 }
