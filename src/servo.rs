@@ -64,6 +64,11 @@ impl ServoConfig {
     }
 
     pub fn new_angle(a: u16) -> ServoConfig {
+        let width = ServoConfig::calc_angle(a);
+        return ServoConfig::new(Duration::from_micros(width));
+    }
+
+    fn calc_angle(a: u16) -> u64 {
         const maxAngle: u16 = 180;
         const min: f32 = 1000.0;
         const max: f32 = 2000.0;
@@ -77,7 +82,7 @@ impl ServoConfig {
         let scalar: f32 = prcnt * (range as f32);
         let width: u64 = (min as u64) + (scalar as u64);
 
-        return ServoConfig::new(Duration::from_micros(width));
+        return width;
     }
 }
 
