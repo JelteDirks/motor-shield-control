@@ -49,7 +49,8 @@ impl Servo {
             angle: a
         };
 
-        pin.set_pwm(cfg.cycle, cfg.width);
+        self.config = cfg;
+        pin.set_pwm(self.config.cycle, self.config.width);
 
         return Ok(());
     }
