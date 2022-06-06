@@ -63,10 +63,24 @@ impl Motor {
 
         if mc.full {
             pin.set_high();
+            self.status = Status::Running;
             return Ok(());
         }
 
         pin.set_pwm(mc.cycle, mc.width);
+        self.status = Status::PWM;
+        
+        return Ok(());
+    }
+
+    pub fn stop(&mut self) -> Result<(), MotorError> {
+        if self.pin.is_none() {
+            return Err(MotorError::PinNotSet);
+        }
+
+        let pin: &mut OutputPin = self.pin.as_mut().unwrap();
+        pin.set_low();
+        self.status = Status::Idle;
 
         return Ok(());
     }
