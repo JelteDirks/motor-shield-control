@@ -71,6 +71,30 @@ impl Motor {
     }
 }
 
+pub struct MotorConfig {
+    cycle: Duration,
+    width: Duration,
+    full: bool
+}
+
+impl MotorConfig {
+    pub fn new_pwm(c: Duration, w: Duration) -> MotorConfig {
+        return MotorConfig {
+            cycle: c,
+            width: w,
+            full: false,
+        }
+    }
+
+    pub fn new_full() -> MotorConfig {
+        return MotorConfig {
+            cycle: Duration::from_millis(100),
+            width: Duration::from_millis(100),
+            full: true,
+        }
+    }
+}
+
 #[derive(Clone, Copy)]
 pub enum Direction {
     Clockwise,
