@@ -72,6 +72,7 @@ impl AMSBoard {
             Ok(p) => self.pin_lat = Some(p.into_output()),
             Err(e) => panic!("{:?}", e),
         };
+
         match serial_pin {
             Ok(p) => self.pin_ser = Some(p.into_output()),
             Err(e) => panic!("{:?}", e),
@@ -162,9 +163,9 @@ impl AMSBoard {
         return true;
     }
 
-    fn update_shift_register(&mut self) {
+    fn update_shift_register(&mut self) -> Result<(), BoardError> {
         if !self.register_pins_are_valid() {
-            panic!("register pins are not set correctly");
+            return Err(BoardError::RegisterPinNotSet);
         }
 
         let latch = self.pin_lat.as_mut().unwrap();
@@ -187,19 +188,13 @@ impl AMSBoard {
         }        
 
         latch.set_high();
+
+        return Ok(());
     }
 
     pub fn update_motors(&mut self) -> Result<(), BoardError> {
-        if self.pin_lat.is_none() {
-            return Err(BoardError::LatchPinNotSet); 
-        }
-
-        if self.pin_ser.is_none() {
-            return Err(BoardError::SerialPinNotSet);
-        }
-
-        if self.pin_clk.is_none() {
-            return Err(BoardError::ClockPinNotSet);
+        if !self.register_pins_are_valid() {
+            return Err(BoardError::RegisterPinNotSet);
         }
 
         self.update_directions();
@@ -208,12 +203,12 @@ impl AMSBoard {
         for m in self.motors.iter_mut() {
             let motor = match m {
                 Some(m) => m,
-                _ => panic!("first"),
+                _ => panic!("motor not set correctly"),
             };
 
             let pin = match motor.pin.as_mut() {
                 Some(p) => p,
-                _ => panic!("second"),
+                _ => panic!("pin not set correctly"),
             };
 
             pin.set_pwm(motor.pwm_cycle, motor.pulse_width);
@@ -224,9 +219,7 @@ impl AMSBoard {
 }
 
 pub enum BoardError {
-    LatchPinNotSet,
-    SerialPinNotSet,
-    ClockPinNotSet,
+    RegisterPinNotSet,
 }
 
 pub enum BoardType {
