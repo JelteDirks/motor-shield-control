@@ -3,9 +3,6 @@ use rppal::gpio::{OutputPin, Gpio, Error as GpioError};
 use core::time::Duration;
 
 pub struct AMSBoard {    
-    dir_ser: Option<u8>,
-    dir_clk: Option<u8>,
-    dir_lat: Option<u8>,
     pin_ser: Option<OutputPin>,
     pin_clk: Option<OutputPin>,
     pin_lat: Option<OutputPin>,
@@ -17,9 +14,6 @@ pub struct AMSBoard {
 impl AMSBoard {
     pub fn new(t: BoardType) -> AMSBoard {
         return AMSBoard {
-            dir_ser: None,
-            dir_clk: None,
-            dir_lat: None,
             pin_ser: None,
             pin_clk: None,
             pin_lat: None,
@@ -49,10 +43,6 @@ impl AMSBoard {
     }
 
     pub fn set_shift_register(&mut self, ser: u8, clk: u8, lat: u8) {
-        self.dir_ser = Some(ser);
-        self.dir_clk = Some(clk);
-        self.dir_lat = Some(lat);
-
         let gpio_res: Result<Gpio, GpioError> = Gpio::new(); 
         let gpio = match gpio_res {
             Ok(g) => g,
@@ -134,19 +124,6 @@ impl AMSBoard {
         };
     }
 
-    pub fn change_motor_pulse_width(&mut self, p: usize, cycle: Duration) -> Result<(), MotorError> {
-        if cycle > Duration::from_millis(100) {
-            return Err(MotorError::PWMDurationTooHigh);
-        }
-
-        match &mut self.motors[p -1] {
-            Some(motor) => motor.set_pwm_cycle(cycle),
-            _ => return Err(MotorError::MotorNotFound),
-        }
-
-        return Ok(());
-    }
-
     fn register_pins_are_valid(&self) -> bool {
         if self.pin_clk.is_none() {
             return false;
@@ -188,31 +165,6 @@ impl AMSBoard {
         }        
 
         latch.set_high();
-
-        return Ok(());
-    }
-
-    pub fn update_motors(&mut self) -> Result<(), BoardError> {
-        if !self.register_pins_are_valid() {
-            return Err(BoardError::RegisterPinNotSet);
-        }
-
-        self.update_directions();
-        self.update_shift_register();
-        
-        for m in self.motors.iter_mut() {
-            let motor = match m.as_mut() {
-                Some(m) => m,
-                _ => panic!("motor not set correctly"),
-            };
-
-            let pin = match motor.pin.as_mut() {
-                Some(p) => p,
-                _ => panic!("pin not set correctly"),
-            };
-
-            pin.set_pwm(motor.pwm_cycle, motor.pulse_width);
-        }
 
         return Ok(());
     }

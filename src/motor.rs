@@ -3,8 +3,6 @@ use core::time::Duration;
 
 pub struct Motor {
     pub pin: Option<OutputPin>, 
-    pub pwm_cycle: Duration,
-    pub pulse_width: Duration,
     direction: Direction,
     status:Status,
 }
@@ -13,8 +11,6 @@ impl Motor {
     pub fn new() -> Motor {
         return Motor {
             pin: None,
-            pwm_cycle: Duration::from_millis(100),
-            pulse_width: Duration::from_millis(100),
             direction: Direction::Clockwise,
             status: Status::Idle,
         }
@@ -44,22 +40,6 @@ impl Motor {
         };
 
         return Ok(());
-    }
-
-    pub fn get_pwm_cycle(&self) -> Duration {
-        return self.pwm_cycle;
-    }
-
-    pub fn get_pulse_width(&self) -> Duration {
-        return self.pulse_width;
-    }
-
-    pub fn set_pwm_cycle(&mut self, pp: Duration) {
-        self.pwm_cycle = pp;
-    }
-
-    pub fn set_pulse_width(&mut self, pd: Duration) {
-        self.pulse_width = pd;
     }
 
     pub fn get_direction(&self) -> Direction {
