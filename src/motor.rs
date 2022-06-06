@@ -65,6 +65,10 @@ impl Motor {
     pub fn get_direction(&self) -> Direction {
         return self.direction;
     }
+
+    pub fn get_status(&self) -> Status {
+        return self.status;
+    }
 }
 
 #[derive(Clone, Copy)]
@@ -73,10 +77,11 @@ pub enum Direction {
     Counterclockwise
 }
 
-#[derive(Debug)]
+#[derive(Debug, Clone, Copy)]
 pub enum Status {
     PWM,
-    Idle
+    Idle,
+    Running,
 }
 
 #[derive(Debug)]
