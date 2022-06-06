@@ -23,52 +23,6 @@ impl AMSBoard {
         }
     }
 
-    pub fn get_motor(&mut self, n: usize) -> Result<&mut Motor, MotorError> {
-        let motor = &mut self.motors[n - 1];
-        match motor {
-            Some(m) => return Ok(m),
-            None => return Err(MotorError::MotorNotFound),
-        }
-    }
-
-    pub fn set_motor(&mut self, m: Motor, n: usize) -> Result<bool, MotorError> {
-        if n < 1 || n > 4 {
-            return Err(MotorError::MotorIndexOutOfBounds);
-        }
-
-        self.motors[n - 1] = Some(m);
-        self.update_directions();
-
-        return Ok(true);
-    }
-
-    pub fn set_shift_register(&mut self, ser: u8, clk: u8, lat: u8) {
-        let gpio_res: Result<Gpio, GpioError> = Gpio::new(); 
-        let gpio = match gpio_res {
-            Ok(g) => g,
-            Err(e) => panic!("{:?}", e),
-        };
-
-        let latch_pin = gpio.get(lat);
-        let serial_pin = gpio.get(ser);
-        let clock_pin = gpio.get(clk); 
-
-        match clock_pin {
-            Ok(p) => self.pin_clk = Some(p.into_output()),
-            Err(e) => panic!("{:?}", e),
-        };
-
-        match latch_pin {
-            Ok(p) => self.pin_lat = Some(p.into_output()),
-            Err(e) => panic!("{:?}", e),
-        };
-
-        match serial_pin {
-            Ok(p) => self.pin_ser = Some(p.into_output()),
-            Err(e) => panic!("{:?}", e),
-        };
-    }
-
     fn calculate_directions(&self) -> u8 {
         let m1_dir: u8 = match &self.motors[0] {
             Some(m) => match m.get_direction(){
@@ -105,23 +59,8 @@ impl AMSBoard {
         return m1_dir | m2_dir | m3_dir | m4_dir; 
     }
 
-    pub fn get_directions(&self) -> u8 {
-        return self.directions; 
-    }
-    
     fn update_directions (&mut self) {
         self.directions = self.calculate_directions();
-    }
-
-    pub fn change_motor_direction(&mut self, p: usize, d: Direction) -> Result<(), MotorError> {
-        match &mut self.motors[p - 1] {
-            Some(motor) => {
-                motor.set_direction(d);
-                self.update_directions();
-                return Ok(());
-            },
-            _ => return Err(MotorError::MotorNotFound),
-        };
     }
 
     fn register_pins_are_valid(&self) -> bool {
@@ -182,6 +121,67 @@ impl AMSBoard {
         motor.start(cfg);
 
         return Ok(());
+    }
+    
+    pub fn get_motor(&mut self, n: usize) -> Result<&mut Motor, MotorError> {
+        let motor = &mut self.motors[n - 1];
+        match motor {
+            Some(m) => return Ok(m),
+            None => return Err(MotorError::MotorNotFound),
+        }
+    }
+
+    pub fn set_motor(&mut self, m: Motor, n: usize) -> Result<bool, MotorError> {
+        if n < 1 || n > 4 {
+            return Err(MotorError::MotorIndexOutOfBounds);
+        }
+
+        self.motors[n - 1] = Some(m);
+        self.update_directions();
+
+        return Ok(true);
+    }
+
+    pub fn set_shift_register(&mut self, ser: u8, clk: u8, lat: u8) {
+        let gpio_res: Result<Gpio, GpioError> = Gpio::new(); 
+        let gpio = match gpio_res {
+            Ok(g) => g,
+            Err(e) => panic!("{:?}", e),
+        };
+
+        let latch_pin = gpio.get(lat);
+        let serial_pin = gpio.get(ser);
+        let clock_pin = gpio.get(clk); 
+
+        match clock_pin {
+            Ok(p) => self.pin_clk = Some(p.into_output()),
+            Err(e) => panic!("{:?}", e),
+        };
+
+        match latch_pin {
+            Ok(p) => self.pin_lat = Some(p.into_output()),
+            Err(e) => panic!("{:?}", e),
+        };
+
+        match serial_pin {
+            Ok(p) => self.pin_ser = Some(p.into_output()),
+            Err(e) => panic!("{:?}", e),
+        };
+    }
+
+    pub fn get_directions(&self) -> u8 {
+        return self.directions; 
+    }
+    
+    pub fn change_motor_direction(&mut self, p: usize, d: Direction) -> Result<(), MotorError> {
+        match &mut self.motors[p - 1] {
+            Some(motor) => {
+                motor.set_direction(d);
+                self.update_directions();
+                return Ok(());
+            },
+            _ => return Err(MotorError::MotorNotFound),
+        };
     }
 
     pub fn start_motor_config(&mut self, n: usize, mc: MotorConfig) -> Result<(), BoardError> {
