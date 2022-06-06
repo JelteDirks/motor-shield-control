@@ -4,7 +4,7 @@ use core::time::Duration;
 pub struct Motor {
     pub pin: Option<OutputPin>, 
     direction: Direction,
-    status:Status,
+    status: Status,
 }
 
 impl Motor {
@@ -69,7 +69,7 @@ impl Motor {
 
         pin.set_pwm(mc.cycle, mc.width);
         self.status = Status::PWM;
-        
+
         return Ok(());
     }
 
@@ -110,7 +110,7 @@ impl MotorConfig {
     }
 }
 
-#[derive(Clone, Copy)]
+#[derive(Debug, Clone, Copy)]
 pub enum Direction {
     Clockwise,
     Counterclockwise

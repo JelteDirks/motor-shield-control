@@ -115,9 +115,9 @@ impl AMSBoard {
         if self.motors[n - 1].is_none() {
             return Err(BoardError::MotorError(MotorError::MotorNotFound));
         }
-
+        
+        self.update_shift_register();
         let motor: &mut Motor = self.motors[n - 1].as_mut().unwrap();
-
         motor.start(cfg);
 
         return Ok(());
