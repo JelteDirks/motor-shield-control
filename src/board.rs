@@ -1,4 +1,4 @@
-use crate::motor::{Motor, MotorError, Direction};
+use crate::motor::{Motor, MotorError, Direction, MotorConfig};
 use rppal::gpio::{OutputPin, Gpio, Error as GpioError};
 use core::time::Duration;
 
@@ -216,10 +216,28 @@ impl AMSBoard {
 
         return Ok(());
     }
+
+    pub fn start_motor(&mut self, n: usize) -> Result<(), BoardError> {
+        if n < 1 || n > 4 {
+            return Err(BoardError::MotorError(MotorError::MotorIndexOutOfBounds));
+        }
+
+        if self.motors[n - 1].is_none() {
+            return Err(BoardError::MotorError(MotorError::MotorNotFound));
+        }
+
+        let motor: &mut Motor = self.motors[n - 1].as_mut().unwrap();
+        let cfg: MotorConfig = MotorConfig::new_full();
+
+        motor.start(cfg);
+
+        return Ok(());
+    }
 }
 
 pub enum BoardError {
     RegisterPinNotSet,
+    MotorError(MotorError),
 }
 
 pub enum BoardType {
