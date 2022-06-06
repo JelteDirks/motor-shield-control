@@ -150,7 +150,6 @@ impl AMSBoard {
         let clock = self.pin_clk.as_mut().unwrap();
 
         latch.set_low();
-
         let mut b: u16 = 0b1;
         while b == 128 {
             clock.set_low();
@@ -195,6 +194,21 @@ impl AMSBoard {
 
     pub fn start_motor_full(&mut self, n: usize) -> Result<(), BoardError> {
         return self.start_motor(n, MotorConfig::new_full());
+    }
+
+    pub fn stop_motor(&mut self, n: usize) -> Result<(), BoardError> { 
+        if n < 1 || n > 4 {
+            return Err(BoardError::MotorError(MotorError::MotorIndexOutOfBounds));
+        }
+
+        if self.motors[n - 1].is_none() {
+            return Err(BoardError::MotorError(MotorError::MotorNotFound));
+        }
+
+        let motor: &mut Motor = self.motors[n - 1].as_mut().unwrap();
+        motor.stop();
+
+        return Ok(());
     }
 }
 
