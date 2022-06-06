@@ -169,7 +169,7 @@ impl AMSBoard {
         return Ok(());
     }
 
-    pub fn start_motor(&mut self, n: usize) -> Result<(), BoardError> {
+    fn start_motor(&mut self, n: usize, cfg: MotorConfig) -> Result<(), BoardError> {
         if n < 1 || n > 4 {
             return Err(BoardError::MotorError(MotorError::MotorIndexOutOfBounds));
         }
@@ -179,11 +179,22 @@ impl AMSBoard {
         }
 
         let motor: &mut Motor = self.motors[n - 1].as_mut().unwrap();
-        let cfg: MotorConfig = MotorConfig::new_full();
 
         motor.start(cfg);
 
         return Ok(());
+    }
+
+    pub fn start_motor_config(&mut self, n: usize, mc: MotorConfig) -> Result<(), BoardError> {
+        return self.start_motor(n, mc);
+    }
+
+    pub fn start_motor_pwm(&mut self, n: usize, cycle: Duration, width: Duration) -> Result<(), BoardError> {
+        return self.start_motor(n, MotorConfig::new_pwm(cycle, width));
+    }
+
+    pub fn start_motor_full(&mut self, n: usize) -> Result<(), BoardError> {
+        return self.start_motor(n, MotorConfig::new_full());
     }
 }
 
