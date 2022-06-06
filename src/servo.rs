@@ -34,6 +34,10 @@ impl Servo {
         }
     }
 
+    pub fn get_config(&self) -> &ServoConfig {
+        return &self.config;
+    }
+
     pub fn set_angle(&mut self, a: u16) -> Result<(), ServoError> {
         let width = ServoConfig::calc_width_from_angle(a);
 
