@@ -92,18 +92,18 @@ impl ServoConfig {
     }
 
     fn calc_width_from_angle(a: u16) -> Duration {
-        const maxAngle: u16 = 180;
-        const min: f32 = 1000.0;
-        const max: f32 = 2000.0;
+        const MAXANGLE: u16 = 180;
+        const MIN: f32 = 1000.0;
+        const MAX: f32 = 2000.0;
 
-        if a > maxAngle {
+        if a > MAXANGLE {
             panic!("angle can be at most 180");
         }
 
-        let range: f32 = max - min;
-        let prcnt: f32 = (a as f32) / (maxAngle as f32); 
+        let range: f32 = MAX - MIN;
+        let prcnt: f32 = (a as f32) / (MAXANGLE as f32); 
         let scalar: f32 = prcnt * (range as f32);
-        let width: u64 = (min as u64) + (scalar as u64);
+        let width: u64 = (MIN as u64) + (scalar as u64);
 
         return Duration::from_micros(width);
     }
