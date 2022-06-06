@@ -69,6 +69,10 @@ impl Motor {
     pub fn get_status(&self) -> Status {
         return self.status;
     }
+
+    pub fn set_status(&mut self, s: Status) {
+        self.status = s;
+    }
 }
 
 pub struct MotorConfig {
