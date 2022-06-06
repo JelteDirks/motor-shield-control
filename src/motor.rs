@@ -73,6 +73,23 @@ impl Motor {
     pub fn set_status(&mut self, s: Status) {
         self.status = s;
     }
+
+    pub fn start(&mut self, mc: MotorConfig) -> Result<(), MotorError> {
+        if self.pin.is_none() {
+            return Err(MotorError::PinNotSet);
+        }
+
+        let pin = self.pin.as_mut().unwrap();
+
+        if mc.full {
+            pin.set_high();
+            return Ok(());
+        }
+
+        pin.set_pwm(mc.cycle, mc.width);
+
+        return Ok(());
+    }
 }
 
 pub struct MotorConfig {
