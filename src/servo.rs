@@ -1,5 +1,6 @@
 use rppal::gpio::{OutputPin, Gpio};
 use std::time::Duration;
+use std::thread::sleep;
 
 pub struct Servo {
     pin: Option<OutputPin>,
@@ -7,6 +8,7 @@ pub struct Servo {
 }
 
 impl Servo {
+    const PULSE_CYCLE: Duration = Duration::from_millis(20); 
     pub fn new_default(pin: u8) -> Servo  {
         return Servo::new_servo_from_config(ServoConfig::new_default(), pin);
     }
@@ -61,6 +63,27 @@ impl Servo {
 
     pub fn get_angle(self) -> u16 {
         return self.config.angle;
+    }
+
+    pub fn test_range(pin: u8, low: Duration, up: Duration) {
+        let gpio = match Gpio::new() {
+            Ok(g) => g,
+            Err(e) => panic!("{:?}", e),
+        };
+
+        let gpio_pin = match gpio.get(pin) {
+            Ok(gp) => gp,
+            Err(e) => panic!("{:?}", e),
+        }; 
+
+        let mut output_pin = gpio_pin.into_output_low();
+        let mut cur = low;
+        let cycle = Servo::PULSE_CYCLE;
+        while cur < up {
+            cur = cur + Duration::from_micros(100);
+            sleep(Duration::from_secs(1));
+            output_pin.set_pwm(cycle, cur);
+        }
     }
 }
 
