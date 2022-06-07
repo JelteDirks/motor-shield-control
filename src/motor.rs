@@ -19,7 +19,8 @@ impl Motor {
     pub fn is_running(&self) -> bool {
         match self.status {
             Status::PWM => return true,
-            _ => return false,
+            Status::Idle => return false,
+            Status::Running => return true,
         }
     }
 
