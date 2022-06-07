@@ -355,5 +355,29 @@ mod tests {
             Err(e) => panic!(e),
         }
     }
+
+    #[test]
+    fn start_wrong_motor_error_test() {
+        let mut board = AMSBoard::new(BoardType::BCM);
+        assert!(board.start_motor(1).is_err());
+    }
+
+    #[test]
+    fn get_wrong_motor_error_test() {
+        let mut board = AMSBoard::new(BoardType::BCM);
+        assert!(board.get_motor(1).is_err());
+    }
+
+    #[test]
+    fn wrong_motor_index_error_test() {
+        let mut board = AMSBoard::new(BoardType::BCM);
+        assert!(board.get_motor(5).is_err());
+        assert!(board.get_motor(0).is_err());
+
+        let mut motor = Motor::new();
+        board.set_motor(motor, 2);
+        assert!(board.get_motor(2).is_ok());
+    }
+
 }
 
