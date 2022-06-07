@@ -330,5 +330,24 @@ mod tests {
         let direction: u8 = board.calculate_directions();
         assert_eq!(0b11011000, direction);
     }
+
+    #[test]
+    fn motor_is_running_test() {
+        let mut board = AMSBoard::new(BoardType::BCM);
+        let mut motor = Motor::new();
+        board.set_motor(motor, 1);
+        board.start_motor_full(1);
+
+        match board.get_motor(1) {
+            Ok(m) => assert_eq!(m.is_running(), true),
+            Err(e) => panic!(e),
+        }
+
+        board.start_motor_pwm(Duration::from_millis(20), Duration::from_millis(10));
+        match board.get_motor(1) {
+            Ok(m) => assert_eq!(m.is_running(), true),
+            Err(e) => panic!(e),
+        }
+    }
 }
 
