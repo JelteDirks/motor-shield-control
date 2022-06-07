@@ -335,11 +335,17 @@ mod tests {
     fn motor_is_running_test() {
         let mut board = AMSBoard::new(BoardType::BCM);
         let mut motor = Motor::new();
+
         board.set_motor(motor, 1);
         board.start_motor_full(1);
-
         match board.get_motor(1) {
             Ok(m) => assert_eq!(m.is_running(), true),
+            Err(e) => panic!(e),
+        }
+
+        board.stop_motor(1);
+        match board.get_motor(1) {
+            Ok(m) => assert_eq!(m.is_running(), false),
             Err(e) => panic!(e),
         }
 
