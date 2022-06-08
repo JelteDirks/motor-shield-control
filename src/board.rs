@@ -392,5 +392,16 @@ mod tests {
         assert!(board.get_motor(2).is_ok());
     }
 
+    #[test]
+    fn test_motor_range() {
+        let mut board = AMSBoard::new(BoardType::BCM);
+        let mut motor = Motor::new();
+        board.set_motor(motor, 1);
+        let cycle = Duration::from_millis(20);
+        let low = Duration::from_millis(2);
+        let up = Duration::from_millis(20);
+        let step = Duration::from_millis(2);
+        board.test_motor_range(1, cycle, low, up, step);
+    }
 }
 
