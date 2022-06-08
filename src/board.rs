@@ -1,6 +1,7 @@
 use crate::motor::{Motor, MotorError, Direction, MotorConfig};
 use rppal::gpio::{OutputPin, Gpio, Error as GpioError};
 use core::time::Duration;
+use std::matches;
 
 pub struct AMSBoard {    
     pin_ser: Option<OutputPin>,
@@ -175,6 +176,15 @@ impl AMSBoard {
 
     pub fn get_directions(&self) -> u8 {
         return self.directions; 
+    }
+
+    pub fn invert_motor_direction(&mut self, m: usize) {
+        match &mut self.motors[m - 1] {
+            Some(motor) => motor.invert_direction(),
+            None => println!("no motor set for {:?}", m),
+        };
+
+        self.update_directions();
     }
     
     pub fn change_motor_direction(&mut self, p: usize, d: Direction) -> Result<(), MotorError> {
@@ -408,6 +418,16 @@ mod tests {
         let up = Duration::from_millis(20);
         let step = Duration::from_millis(2);
         board.test_motor_range(1, cycle, low, up, step);
+    }
+
+    #[test]
+    fn motor_direction_invert_test() {
+        let mut board = AMSBoard::new(BoardType::BCM);
+        let mut motor = Motor::new();
+        board.set_motor(motor, 1);
+        board.invert_motor_direction(1);
+        let m: &Motor = board.get_motor(1).unwrap();
+        assert!(matches!(m.get_direction(), Direction::Counterclockwise));
     }
 }
 

@@ -38,6 +38,13 @@ impl Motor {
         }
     }
 
+    pub fn invert_direction(&mut self) {
+        match self.get_direction() {
+            Direction::Clockwise => self.set_direction(Direction::Counterclockwise),
+            Direction::Counterclockwise => self.set_direction(Direction::Clockwise),
+        };
+    }
+
     pub fn set_direction(&mut self, d: Direction) {
         self.direction = d;
     }
