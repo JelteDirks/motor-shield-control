@@ -81,7 +81,7 @@ impl Servo {
         let cycle = Servo::PULSE_CYCLE;
         while cur < up {
             cur = cur + Duration::from_micros(100);
-            sleep(Duration::from_secs(1));
+            sleep(Duration::from_millis(500));
             output_pin.set_pwm(cycle, cur);
         }
     }

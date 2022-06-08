@@ -25,7 +25,7 @@ impl Motor {
         let mut cur = low;
         while cur < up {
             output_pin.set_pwm(cycle, cur);
-            sleep(Duration::from_secs(1));
+            sleep(Duration::from_millis(500));
             cur += step;
         }
     }
