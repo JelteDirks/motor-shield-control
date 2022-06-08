@@ -1,5 +1,6 @@
 use rppal::gpio::{OutputPin, Gpio, Error as GpioError};
 use core::time::Duration;
+use std::thread::sleep;
 
 pub struct Motor {
     pub pin: Option<OutputPin>, 
@@ -13,6 +14,19 @@ impl Motor {
             pin: None,
             direction: Direction::Clockwise,
             status: Status::Idle,
+        }
+    }
+
+    pub fn test_range(&mut self, pin: u8, cycle: Duration, low: Duration, up: Duration, step: Duration) {
+        let output_pin: &mut OutputPin = match self.pin.as_mut() {
+            Some(g) => g,
+            None => panic!("pin for this motor is not set, can not test range"),
+        };
+        let mut cur = low;
+        while cur < up {
+            output_pin.set_pwm(cycle, cur);
+            sleep(Duration::from_secs(1));
+            cur += step;
         }
     }
 
