@@ -210,6 +210,19 @@ impl AMSBoard {
 
         return Ok(());
     }
+
+    pub fn test_motor_range(&mut self, n: usize, cycle:Duration, low:Duration, up:Duration, step:Duration) {
+        if n < 1 || n > 4 {
+            panic!("index out of bounds");
+        }
+
+        if self.motors[n - 1].is_none() {
+            panic!("motor is not set");
+        }
+
+        let motor: &mut Motor = self.motors[n - 1].as_mut().unwrap();
+        motor.test_range(cycle, low, up, step);
+    }
 }
 
 pub enum BoardError {

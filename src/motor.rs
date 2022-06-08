@@ -17,7 +17,7 @@ impl Motor {
         }
     }
 
-    pub fn test_range(&mut self, pin: u8, cycle: Duration, low: Duration, up: Duration, step: Duration) {
+    pub fn test_range(&mut self, cycle: Duration, low: Duration, up: Duration, step: Duration) {
         let output_pin: &mut OutputPin = match self.pin.as_mut() {
             Some(g) => g,
             None => panic!("pin for this motor is not set, can not test range"),
