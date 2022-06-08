@@ -124,6 +124,10 @@ impl AMSBoard {
     }
     
     pub fn get_motor(&mut self, n: usize) -> Result<&mut Motor, MotorError> {
+        if n < 1 || n > 4 {
+            return Err(MotorError::MotorIndexOutOfBounds);
+        }
+
         let motor = &mut self.motors[n - 1];
         match motor {
             Some(m) => return Ok(m),
@@ -349,30 +353,31 @@ mod tests {
         let mut board = AMSBoard::new(BoardType::BCM);
         let mut motor = Motor::new();
 
+        motor.set_pin(16);
         board.set_motor(motor, 1);
         board.start_motor_full(1);
         match board.get_motor(1) {
             Ok(m) => assert_eq!(m.is_running(), true),
-            Err(e) => panic!(e),
+            Err(e) => panic!("{:?}", e),
         }
 
         board.stop_motor(1);
         match board.get_motor(1) {
             Ok(m) => assert_eq!(m.is_running(), false),
-            Err(e) => panic!(e),
+            Err(e) => panic!("{:?}", e),
         }
 
-        board.start_motor_pwm(Duration::from_millis(20), Duration::from_millis(10));
+        board.start_motor_pwm(1, Duration::from_millis(20), Duration::from_millis(10));
         match board.get_motor(1) {
             Ok(m) => assert_eq!(m.is_running(), true),
-            Err(e) => panic!(e),
+            Err(e) => panic!("{:?}", e),
         }
     }
 
     #[test]
     fn start_wrong_motor_error_test() {
         let mut board = AMSBoard::new(BoardType::BCM);
-        assert!(board.start_motor(1).is_err());
+        assert!(board.start_motor_full(1).is_err());
     }
 
     #[test]
@@ -396,6 +401,7 @@ mod tests {
     fn test_motor_range() {
         let mut board = AMSBoard::new(BoardType::BCM);
         let mut motor = Motor::new();
+        motor.set_pin(16);
         board.set_motor(motor, 1);
         let cycle = Duration::from_millis(20);
         let low = Duration::from_millis(2);
