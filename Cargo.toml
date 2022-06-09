@@ -7,3 +7,6 @@ edition = "2021"
 
 [dependencies]
 rppal = { version = "0.13.1", features = ["hal"] }
+
+[[example]]
+name = "board"
