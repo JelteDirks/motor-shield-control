@@ -424,6 +424,7 @@ mod tests {
     fn motor_direction_invert_test() {
         let mut board = AMSBoard::new(BoardType::BCM);
         let mut motor = Motor::new();
+        motor.set_pin(16);
         board.set_motor(motor, 1);
         board.invert_motor_direction(1);
         let m: &Motor = board.get_motor(1).unwrap();
