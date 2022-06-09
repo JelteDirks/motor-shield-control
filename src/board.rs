@@ -147,7 +147,7 @@ impl AMSBoard {
         return Ok(true);
     }
 
-    pub fn set_shift_register(&mut self, ser: u8, clk: u8, lat: u8) {
+    pub fn set_shift_register_pins(&mut self, ser: u8, clk: u8, lat: u8) {
         let gpio_res: Result<Gpio, GpioError> = Gpio::new(); 
         let gpio = match gpio_res {
             Ok(g) => g,
