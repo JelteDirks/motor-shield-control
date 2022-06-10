@@ -79,11 +79,14 @@ impl Servo {
         let mut output_pin = gpio_pin.into_output_low();
         let mut cur = low;
         let cycle = Servo::PULSE_CYCLE;
-        while cur < up {
-            cur = cur + Duration::from_micros(100);
+        while cur <= up {
+            println!("testing servo range width={:?} and cycle{:?}", cur, cycle);
             sleep(Duration::from_millis(500));
             output_pin.set_pwm(cycle, cur);
+            cur = cur + Duration::from_micros(100);
         }
+
+        output_pin.set_low();
     }
 }
 
@@ -149,37 +152,3 @@ impl ServoConfig {
     }
 }
 
-#[cfg(test)]
-mod tests {
-    use super::*;
-
-    #[test]
-    fn test_max_angle_calc() {
-        let cfg = ServoConfig::new_config_from_angle(180);
-        assert_eq!(cfg.width, Duration::from_micros(2000)); 
-    }
-
-    #[test]
-    fn test_90_angle_calc() {
-        let cfg = ServoConfig::new_config_from_angle(90);
-        assert_eq!(cfg.width, Duration::from_micros(1500)); 
-    }
-
-    #[test]
-    fn test_min_angle_calc() {
-        let cfg = ServoConfig::new_config_from_angle(0);
-        assert_eq!(cfg.width, Duration::from_micros(1000));
-    }
-
-    #[test]
-    fn test_arbirary_angles() {
-        let cfg = ServoConfig::new_config_from_angle(52);
-        assert_eq!(cfg.width, Duration::from_micros(1288));
-    }
-
-    #[test]
-    fn test_arbirary_angles2() {
-        let cfg = ServoConfig::new_config_from_angle(134);
-        assert_eq!(cfg.width, Duration::from_micros(1744));
-    }
-}
