@@ -14,6 +14,7 @@ pub struct AMSBoard {
   
 impl AMSBoard {
     pub fn new(t: BoardType) -> AMSBoard {
+        println!("creating new board");
         return AMSBoard {
             pin_ser: None,
             pin_clk: None,
@@ -70,10 +71,12 @@ impl AMSBoard {
     }
 
     fn update_directions (&mut self) {
+        println!("calculating internal directions");
         self.directions = self.calculate_directions();
     }
 
     fn register_pins_are_valid(&self) -> bool {
+        println!("checking if pins are valid");
         if self.pin_clk.is_none() {
             return false;
         }
@@ -85,6 +88,8 @@ impl AMSBoard {
         if self.pin_lat.is_none() {
             return false;
         }
+
+        println!("pins are valid!");
 
         return true;
     }
@@ -140,8 +145,9 @@ impl AMSBoard {
         
         self.update_shift_register();
         let motor: &mut Motor = self.motors[n - 1].as_mut().unwrap();
+        
+        println!("starting motor");
         motor.start(cfg);
-
 
         return Ok(());
     }
@@ -163,6 +169,7 @@ impl AMSBoard {
             return Err(MotorError::MotorIndexOutOfBounds);
         }
 
+        println!("set motor number {:?}", n);
         self.motors[n - 1] = Some(m);
         self.update_directions();
 
@@ -179,6 +186,8 @@ impl AMSBoard {
         let latch_pin = gpio.get(lat);
         let serial_pin = gpio.get(ser);
         let clock_pin = gpio.get(clk); 
+        
+        println!("setting shift register pins");
 
         match clock_pin {
             Ok(p) => self.pin_clk = Some(p.into_output()),
@@ -197,10 +206,12 @@ impl AMSBoard {
     }
 
     pub fn get_directions(&self) -> u8 {
+        println!("retrieving directions");
         return self.directions; 
     }
 
     pub fn invert_motor_direction(&mut self, m: usize) {
+        println!("inverting motor directions");
         match &mut self.motors[m - 1] {
             Some(motor) => motor.invert_direction(),
             None => println!("no motor set for {:?}", m),
@@ -210,6 +221,7 @@ impl AMSBoard {
     }
     
     pub fn change_motor_direction(&mut self, p: usize, d: Direction) -> Result<(), MotorError> {
+        println!("change motor directions of motor {:?} to {:?}", p, d);
         match &mut self.motors[p - 1] {
             Some(motor) => {
                 motor.set_direction(d);
@@ -221,14 +233,17 @@ impl AMSBoard {
     }
 
     pub fn start_motor_config(&mut self, n: usize, mc: MotorConfig) -> Result<(), BoardError> {
+        println!("start motor {:?} with config {:?}", n, mc);
         return self.start_motor(n, mc);
     }
 
     pub fn start_motor_pwm(&mut self, n: usize, cycle: Duration, width: Duration) -> Result<(), BoardError> {
+        println!("start motor {:?} with pwm cycle {:?} and width {:?}", n, cycle, width);
         return self.start_motor(n, MotorConfig::new_pwm(cycle, width));
     }
 
     pub fn start_motor_full(&mut self, n: usize) -> Result<(), BoardError> {
+        println!("start motor {:?} at full speed", n);
         return self.start_motor(n, MotorConfig::new_full());
     }
 
@@ -242,6 +257,7 @@ impl AMSBoard {
         }
 
         let motor: &mut Motor = self.motors[n - 1].as_mut().unwrap();
+        println!("stopping motor");
         motor.stop();
 
         return Ok(());
@@ -257,6 +273,7 @@ impl AMSBoard {
         }
 
         let motor: &mut Motor = self.motors[n - 1].as_mut().unwrap();
+        println!("testing motor {:?} range", n);
         motor.test_range(cycle, low, up, step);
     }
 }

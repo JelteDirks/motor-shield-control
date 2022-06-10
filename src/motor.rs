@@ -127,6 +127,7 @@ impl Motor {
     }
 }
 
+#[derive(Debug)]
 pub struct MotorConfig {
     cycle: Duration,
     width: Duration,
