@@ -109,7 +109,7 @@ impl AMSBoard {
         println!("set latch low");
         let mut b: u16 = 128;
         while b != 0 {
-            println!("setting pit position {:#010b}", b);
+            println!("setting bit position {:#010b}", b);
             println!("\tset clock low");
             clock.set_low();
             let c: u16 = b & (self.directions as u16);
@@ -402,6 +402,7 @@ mod tests {
         let mut motor = Motor::new();
 
         motor.set_pin(16);
+        board.set_shift_register_pins(16, 20, 19);
         board.set_motor(motor, 1);
         board.start_motor_full(1);
         match board.get_motor(1) {
