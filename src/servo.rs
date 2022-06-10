@@ -98,14 +98,17 @@ pub struct ServoConfig {
 }
 
 impl ServoConfig {
+    const MIN: f32 = 400.0; 
+    const MAX: f32 = 2600.0;
+    const MAX_ANGLE: u16 = 180; 
 
     fn new(width: Duration) -> ServoConfig {
-        if width < Duration::from_micros(900) {
-            panic!("pulse width should be at least 0.9ms");
+        if width < Duration::from_micros(ServoConfig::MIN as u64) {
+            panic!("pulse width should be at least 0.4ms");
         }
  
-        if width > Duration::from_micros(2100) {
-            panic!("pulse width should be at most 2.1ms");
+        if width > Duration::from_micros(ServoConfig::MAX as u64) {
+            panic!("pulse width should be at most 2.6ms");
         }
 
         return ServoConfig {
@@ -133,18 +136,14 @@ impl ServoConfig {
     }
 
     fn calc_width_from_angle(a: u16) -> Duration {
-        const MAXANGLE: u16 = 180;
-        const MIN: f32 = 1000.0;
-        const MAX: f32 = 2000.0;
-
-        if a > MAXANGLE {
+        if a > ServoConfig::MAX_ANGLE {
             panic!("angle can be at most 180");
         }
 
-        let range: f32 = MAX - MIN;
-        let prcnt: f32 = (a as f32) / (MAXANGLE as f32); 
+        let range: f32 = ServoConfig::MAX - ServoConfig::MIN;
+        let prcnt: f32 = (a as f32) / (ServoConfig::MAX_ANGLE as f32); 
         let scalar: f32 = prcnt * (range as f32);
-        let width: u64 = (MIN as u64) + (scalar as u64);
+        let width: u64 = (ServoConfig::MIN as u64) + (scalar as u64);
 
         return Duration::from_micros(width);
     }
