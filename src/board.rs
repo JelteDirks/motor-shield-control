@@ -187,7 +187,7 @@ impl AMSBoard {
         let serial_pin = gpio.get(ser);
         let clock_pin = gpio.get(clk); 
         
-        println!("setting shift register pins");
+        println!("setting shift register pins latch={:?} clock={:?} serial={:?}", latch_pin.pin(), clock_pin.pin(), serial_pin.pin());
 
         match clock_pin {
             Ok(p) => self.pin_clk = Some(p.into_output()),
