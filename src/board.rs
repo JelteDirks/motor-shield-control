@@ -25,6 +25,7 @@ impl AMSBoard {
     }
 
     fn calculate_directions(&self) -> u8 {
+        println!("calculating directions of motors");
         let m1_dir: u8 = match &self.motors[0] {
             Some(m) => match m.get_direction(){
                 Direction::Clockwise => 4,
@@ -32,6 +33,7 @@ impl AMSBoard {
             },
             _ => 0
         };
+        println!("motor 1: {:#010b}", m1_dir);
 
         let m2_dir: u8 = match &self.motors[1] {
             Some(m) => match m.get_direction(){
@@ -41,6 +43,8 @@ impl AMSBoard {
             _ => 0
         };
 
+        println!("motor 2: {:#010b}", m2_dir);
+        
         let m3_dir: u8 = match &self.motors[2] {
             Some(m) => match m.get_direction(){
                 Direction::Clockwise => 1,
@@ -48,6 +52,8 @@ impl AMSBoard {
             },
             _ => 0
         };
+        
+        println!("motor 3: {:#010b}", m3_dir);
 
         let m4_dir: u8 = match &self.motors[3] {
             Some(m) => match m.get_direction(){
@@ -56,6 +62,9 @@ impl AMSBoard {
             },
             _ => 0
         };
+        println!("motor 4: {:#010b}", m4_dir);
+
+        println!("total direction: {:#010b}", m1_dir | m2_dir | m3_dir | m4_dir);
 
         return m1_dir | m2_dir | m3_dir | m4_dir; 
     }

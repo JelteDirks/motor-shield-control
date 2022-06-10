@@ -10,6 +10,7 @@ pub struct Motor {
 
 impl Motor {
     pub fn new() -> Motor {
+        println!("created new motor");
         return Motor {
             pin: None,
             direction: Direction::Clockwise,
@@ -18,12 +19,14 @@ impl Motor {
     }
 
     pub fn test_range(&mut self, cycle: Duration, low: Duration, up: Duration, step: Duration) {
+        println!("testing motor pwm range");
         let output_pin: &mut OutputPin = match self.pin.as_mut() {
             Some(g) => g,
             None => panic!("pin for this motor is not set, can not test range"),
         };
         let mut cur = low;
         while cur < up {
+            println!("cycle={:?} width={:?}", cycle, cur);
             output_pin.set_pwm(cycle, cur);
             sleep(Duration::from_millis(500));
             cur += step;
@@ -31,6 +34,7 @@ impl Motor {
     }
 
     pub fn is_running(&self) -> bool {
+        println!("check if motor is running: {:?} ", self.status);
         match self.status {
             Status::PWM => return true,
             Status::Idle => return false,
@@ -39,6 +43,7 @@ impl Motor {
     }
 
     pub fn invert_direction(&mut self) {
+        println!("switching direction");
         match self.get_direction() {
             Direction::Clockwise => self.set_direction(Direction::Counterclockwise),
             Direction::Counterclockwise => self.set_direction(Direction::Clockwise),
@@ -46,10 +51,12 @@ impl Motor {
     }
 
     pub fn set_direction(&mut self, d: Direction) {
+        println!("setting direction to {:?}", d);
         self.direction = d;
     }
 
     pub fn set_pin(&mut self, p: u8) -> Result<(), GpioError> {
+        println!("setting motor pin to: {:?}", p);
         let gpio = Gpio::new();
         let gpio_pin = match gpio {
             Ok(gp) => gp,
@@ -61,18 +68,23 @@ impl Motor {
             Err(e) => panic!("{:?}", e),
         };
 
+        println!("pin is set");
+
         return Ok(());
     }
 
     pub fn get_direction(&self) -> Direction {
+        println!("retrieving direction");
         return self.direction;
     }
 
     pub fn get_status(&self) -> Status {
+        println!("getting status");
         return self.status;
     }
 
     pub fn set_status(&mut self, s: Status) {
+        println!("set status to {:?}", s);
         self.status = s;
     }
 
@@ -104,6 +116,8 @@ impl Motor {
         if self.pin.is_none() {
             return Err(MotorError::PinNotSet);
         }
+
+        println!("stopping motor");
 
         let pin: &mut OutputPin = self.pin.as_mut().unwrap();
         pin.set_low();
