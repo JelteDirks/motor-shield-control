@@ -89,21 +89,33 @@ impl AMSBoard {
         let serial = self.pin_ser.as_mut().unwrap();
         let clock = self.pin_clk.as_mut().unwrap();
 
+        println!("pushing to shift register. latch={:?}, serial={:?} clock={:?}", latch.pin(), serial.pin(), clock.pin());
+
         latch.set_low();
-        let mut b: u16 = 0b1;
-        while b == 128 {
+        println!("set latch low");
+        let mut b: u16 = 128;
+        while b != 0 {
+            println!("setting pit position {:#010b}", b);
+            println!("\tset clock low");
             clock.set_low();
             let c: u16 = b & (self.directions as u16);
             if c == b {
+                println!("\tset serial high");
                 serial.set_high();
             } else {
+                println!("\tset serial low");
                 serial.set_low();
             }
+            println!("\tset clock high");
             clock.set_high();
-            b = b << 1;
+            b = b >> 1;
         }        
 
+        println!("directions are set to {:#010b}", self.directions);
+        println!("set latch high");
         latch.set_high();
+
+        println!("latch.is_high={:?}\n clock.is_high={:?}\n serial.is_high={:?}", latch.is_set_high(), clock.is_set_high(), serial.is_set_high());
 
         return Ok(());
     }
@@ -120,6 +132,7 @@ impl AMSBoard {
         self.update_shift_register();
         let motor: &mut Motor = self.motors[n - 1].as_mut().unwrap();
         motor.start(cfg);
+
 
         return Ok(());
     }

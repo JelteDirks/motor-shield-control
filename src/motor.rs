@@ -83,12 +83,17 @@ impl Motor {
 
         let pin = self.pin.as_mut().unwrap();
 
+        println!("starting motor");
+
         if mc.full {
+            println!("full speed");
             pin.set_high();
+            println!("pin is set to high: {:?}", pin.is_set_high());
             self.status = Status::Running;
             return Ok(());
         }
 
+        println!("pwm cycle: {:?} width: {:?}", mc.cycle, mc.width);
         pin.set_pwm(mc.cycle, mc.width);
         self.status = Status::PWM;
 
