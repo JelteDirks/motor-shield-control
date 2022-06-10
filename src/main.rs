@@ -10,11 +10,15 @@ fn main() {
     let low = Duration::from_micros(500);
     let high = Duration::from_micros(2500);
     Servo::test_range(26, low, high);
+
+    let mut servo = Servo::new_default(26);
+    servo.set_angle(0);
+    sleep(Duration::from_secs(2));
     
-    start_motor_full(1);
-    start_motor_full(2);
-    start_motor_full(3);
-    start_motor_full(4);
+//    start_motor_full(1);
+//    start_motor_full(2);
+//    start_motor_full(3);
+//    start_motor_full(4);
 
 //    start_motor(1);
 //    start_motor(2);

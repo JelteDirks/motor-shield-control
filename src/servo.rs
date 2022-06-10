@@ -52,6 +52,7 @@ impl Servo {
         };
 
         self.config = cfg;
+        println!("set servo to: cycle={:?} width={:?}", self.config.cycle, self.config.width);
         pin.set_pwm(self.config.cycle, self.config.width);
 
         return Ok(());
@@ -101,8 +102,8 @@ pub struct ServoConfig {
 }
 
 impl ServoConfig {
-    const MIN: f32 = 400.0; 
-    const MAX: f32 = 2600.0;
+    const MIN: f32 = 500.0; 
+    const MAX: f32 = 2500.0;
     const MAX_ANGLE: u16 = 180; 
 
     fn new(width: Duration) -> ServoConfig {
