@@ -9,6 +9,7 @@ pub struct Servo {
 
 impl Servo {
     const PULSE_CYCLE: Duration = Duration::from_millis(20); 
+
     pub fn new_default(pin: u8) -> Servo  {
         return Servo::new_servo_from_config(ServoConfig::new_default(), pin);
     }
