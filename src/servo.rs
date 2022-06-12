@@ -102,8 +102,8 @@ pub struct ServoConfig {
 }
 
 impl ServoConfig {
-    const MIN: f32 = 500.0; 
-    const MAX: f32 = 2500.0;
+    const MIN: f32 = 600.0; 
+    const MAX: f32 = 2550.0;
     const MAX_ANGLE: u16 = 180; 
 
     fn new(width: Duration) -> ServoConfig {
