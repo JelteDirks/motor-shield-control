@@ -145,6 +145,8 @@ impl ServoConfig {
         }
     }
 
+    /// Returns a new default configuration with the default angle. This is 
+    /// currently set locally to 90 degrees.
     pub fn new_default() -> ServoConfig {
         const default_angle: u16 = 90;
         return ServoConfig {
@@ -154,23 +156,31 @@ impl ServoConfig {
         }
     }
 
+    /// Returns a new configuration based on the specified pulse width.
     pub fn new_config_from_width(w: Duration) -> ServoConfig {
         return ServoConfig::new(w);
     }
 
+    /// Returns a new configuration base on the specified angle.
     pub fn new_config_from_angle(a: u16) -> ServoConfig {
         let width = ServoConfig::calc_width_from_angle(a);
         return ServoConfig::new(width);
     }
 
+    /// Returns the duration of a pulse width calculated from the specified
+    /// angle.
     fn calc_width_from_angle(a: u16) -> Duration {
         if a > ServoConfig::MAX_ANGLE {
             panic!("angle can be at most 180");
         }
 
+        // the range over which the servo can operate
         let range: f32 = ServoConfig::MAX - ServoConfig::MIN;
+        // the percentage of width over the total range
         let prcnt: f32 = (a as f32) / (ServoConfig::MAX_ANGLE as f32); 
+        // the scalar that should go on top of the minimum value
         let scalar: f32 = prcnt * (range as f32);
+        // the final width of the pulse
         let width: u64 = (ServoConfig::MIN as u64) + (scalar as u64);
 
         return Duration::from_micros(width);
