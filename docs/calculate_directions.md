@@ -22,7 +22,7 @@ that the consumer will use. As an example:
 
 ```
 board.set_motor(&motor, 1) // set the motor of position 1 (M1)
-board.motor(1) // returns motor at position 1, which should be connected to M1 on the AMS
+board.start_motor_full(1) // starts the motor at M1 at full speed
 ```
 
 To guide the consumer of the library a little better, the following table
@@ -38,7 +38,7 @@ configuration of the shift register.
 
 To see why this is the case, we show the table with bit representation for each
 data line of the shift register, which correspond with the number in the table
-above:
+above (C=clockwise and CC=counter clockwise):
 
 | Motor | Direction | M3A(QA) | M2A(QB) | M1A(QC) | M1B(QD) | M2B(QE) | M4A(QF) | M3B(QG) | M4B(QH) |
 |-------|-----------|---------|---------|---------|---------|---------|---------|---------|---------|
@@ -78,37 +78,48 @@ Below is an algorithm provided for calculating the byte that has to be put into
 the memory of the shift register. It is important to keep in mind that this 
 calculation has to incorporate the settings for each motor.
 
+```rust
+fn calculate_directions(&self) -> u8 {
+    let m1_dir: u8 = match &self.motors[0] {
+        Some(m) => match m.get_direction(){
+            Direction::Clockwise => 4,
+            Direction::Counterclockwise => 8
+        },
+        _ => 0
+    };
+    let m2_dir: u8 = match &self.motors[1] {
+        Some(m) => match m.get_direction(){
+            Direction::Clockwise => 2,
+            Direction::Counterclockwise => 16 
+        },
+        _ => 0
+    };
+    let m3_dir: u8 = match &self.motors[2] {
+        Some(m) => match m.get_direction(){
+            Direction::Clockwise => 1,
+            Direction::Counterclockwise => 64 
+        },
+        _ => 0
+    };
+    let m4_dir: u8 = match &self.motors[3] {
+        Some(m) => match m.get_direction(){
+            Direction::Clockwise => 32,
+            Direction::Counterclockwise => 128 
+        },
+        _ => 0
+    };
+    return m1_dir | m2_dir | m3_dir | m4_dir; 
+}
 ```
-update_direction(board)
-    m1_dir <- board.motor(1).direction
-    m2_dir <- board.motor(2).direction
-    m3_dir <- board.motor(3).direction
-    m4_dir <- board.motor(4).direction
+To explain the above algorithm: its only function is to retrieve the direction
+of every motor, of which the corresponding numbers are fixed, and bitwise OR
+or these with eachother. Since the bit representation of these numbers never
+have an overflow, we could also add the numbers together, yet this better
+represents what is happening and why.
 
-    final <- 0b0
-
-    if m1_dir == clockwise
-        final <- final | 4
-    else 
-        final <- final | 8
-
-    if m2_dir == clockwise
-        final <- final | 2 
-    else 
-        final <- final | 16 
-
-    if m3_dir == clockwise
-        final <- final | 1 
-    else 
-        final <- final | 64 
-
-    if m4_dir == clockwise
-        final <- final | 32 
-    else 
-        final <- final | 128 
-
-    return final
-```
+When the directions are calculated, we have to push these into the shift
+register and save them to the memory so the motors have a fixed direction. To
+do this, we use the following algorithm:
 
 
 

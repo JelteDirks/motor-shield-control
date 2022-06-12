@@ -11,8 +11,8 @@ importance in the setting of data lines:
 | DIR_CLK   | Also known as the Shift Register Clock. On a rising edge of this input, the DIR_SER is pushed up into the shift register. Starting at QA, ending at QH                            |
 | DIR_LATCH | Also konwn as the Register Clock. On a rising edge of this input, all parallel outputs of the register (QA-QH) are set according to byte that has been shifted into the register. |
 
-These three inputs can also be found on the data lines of the shield itself in
-the upper left corner. They are connected to the shift register and are used
+These three inputs can also be found on the data lines of the shield itself, in
+the upper left corner of the schematic. They are connected to the shift register and are used
 to push the data into the memory. This happens as follows:
 
 1) Set the DIR_LATCH to LOW, the connection to the memory register is now closed.
@@ -22,38 +22,28 @@ to push the data into the memory. This happens as follows:
 5) Set the DIR_LATCH to HIGH, the stored byte is now put into the memory register
    and will be saved on the data lines
 
-Note that you technically shift your least significant bit first (LSB). At least
-in the representation that we advocating here, the least significant bit is
-QH and the most significant bit is QA. You therefore need to start pushing in
-from the LSB side of the byte.
+Note that you technically shift your most significant bit first (MSB). At least
+in the representation that we advocating here, the most significant bit is
+QH and the least significant bit is QA. You therefore need to start pushing in
+from the MSB side of the byte.
 
 
-Algorithm to push a byte onto the register:
+Algorithm to push a byte onto the register (with comments):
 
+```rust
+latch.set_low(); // set the latch low before pushing
+let mut b: u16 = 128; // initiate the MSB as the first bit to be pushed
+while b != 0 { // continue as long as we still have to push a bit
+    clock.set_low(); // set the clock low, we need a rising edge to push
+    let c: u16 = b & (self.directions as u16); // bitwise AND with the bit to push
+    if c == b { // if the directions had a 1 on that bit, it is still 1 and equal to the number we use to iterate
+        serial.set_high(); // this means that the data line should be high for this push
+    } else { // otherwise it was a 0
+        serial.set_low(); // so we set the data line to low
+    }
+    clock.set_high(); // set the clock high, a rising edge will push the data line into the register
+    b = b >> 1; // shift the bit to check to the right, the next lower significant bit
+}        
+latch.set_high(); // once all bits are pushed, store in memory by opening the latch
 ```
-push_reg(pattern, data, clock, latch):
-    GPIO.set(latch, LOW) // break connection with memory
-    b <- 1 // start with LSB (bit pattern: 0b00000001)
-    while b <= 0b10000000 // while b <= 128, stop after 7 bit shifts
-        GPIO.set(clock, LOW) // start with a LOW clock
-        c <- b & pattern // only keep bit b 
-        if c == b // if c == b, bit b in pattern was 1 
-            GPIO.set(data, HIGH) // we should push HIGH into the register
-        else // c != b, bit b in pattern was 0
-            GPIO.set(data, LOW) // we should push LOW into the register
-        GPIO.set(clock, HIGH) // set clock to HIGH, rising edge pushes bit
-        b <- b << 1 // shift b left once, testing the next significant bit
-    GPIO.set(latch, HIGH) // save the byte into memory, put it on the data lines
-```
 
-An explanation of the algorithm above goes as follows:
-We start by setting the latch low. Then we initialize a new bit pattern
-with 1, which means the LSB is 1, the rest is 0. While this bit pattern is 128
-or lower, which is the break off point for our byte, repeat the following. Set
-the clock low, use bitwise AND with the requested pattern. Since all other bits
-are 0, only the LSB bit can become 1. This only happens if that bit in the
-pattern was also 1. If that bit was 1, it will be the same as b, so we write
-high on the data line for this case. If not, the bit was 0 in the pattern and
-we write low on the data line. We set the clock to high, and with the rising
-edge, the data is pushed into the shift register. We bitwise shift b one to the
-left to do exactly the same with the next most significant bit position.
