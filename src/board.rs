@@ -3,16 +3,25 @@ use rppal::gpio::{OutputPin, Gpio, Error as GpioError};
 use core::time::Duration;
 use std::matches;
 
-pub struct AMSBoard {    
+/// # The AMSBoard structure
+pub struct AMSBoard {
+    /// the serial pin
     pin_ser: Option<OutputPin>,
+    /// the clock pin
     pin_clk: Option<OutputPin>,
+    /// the latch pin
     pin_lat: Option<OutputPin>,
+    /// the list that holds the motors
     motors: [Option<Motor>; 4],
+    /// the board type, currently does nothing
     _type: BoardType,
+    /// the byte that holds the directions of the motors
     directions: u8,
 }
   
 impl AMSBoard {
+    /// Creates a new AMSBoard. The `BoardType` parameter is required but 
+    /// currently serves no functionality.
     pub fn new(t: BoardType) -> AMSBoard {
         println!("creating new board");
         return AMSBoard {
@@ -25,6 +34,13 @@ impl AMSBoard {
         }
     }
 
+    /// This function calculates the directions of all the motors. It relies
+    /// on the fact that motor 1 is actually in slot M1 on the motor shield,
+    /// since these directions are pushed to a shift register which have fixed
+    /// data lines that decide the direction of the M slots. The function gets
+    /// all motor directions and does a bitwise OR to include every direction
+    /// in the byte. This is done to prevent the issue where only setting one
+    /// motors direction will make all other motors stall.
     fn calculate_directions(&self) -> u8 {
         println!("calculating directions of motors");
         let m1_dir: u8 = match &self.motors[0] {
@@ -70,11 +86,16 @@ impl AMSBoard {
         return m1_dir | m2_dir | m3_dir | m4_dir; 
     }
 
+    /// An internal function to update the directions of this board. It
+    /// recalculates directions and stores them in the interal directions
+    /// property.
     fn update_directions (&mut self) {
         println!("calculating internal directions");
         self.directions = self.calculate_directions();
     }
 
+    /// Checks if the register pins are valid. If any of them is `None`, the
+    /// function will return false.
     fn register_pins_are_valid(&self) -> bool {
         println!("checking if pins are valid");
         if self.pin_clk.is_none() {
@@ -94,6 +115,10 @@ impl AMSBoard {
         return true;
     }
 
+    /// This function updates the shift register. It does this by looking at 
+    /// the directions property of the AMSBoard struct, and iterating over each
+    /// bit from MSB to LSB, pushing it onto the register. The latch is then
+    /// opened and the byte is stored into the memory.
     fn update_shift_register(&mut self) -> Result<(), BoardError> {
         if !self.register_pins_are_valid() {
             return Err(BoardError::RegisterPinNotSet);
@@ -103,37 +128,39 @@ impl AMSBoard {
         let serial = self.pin_ser.as_mut().unwrap();
         let clock = self.pin_clk.as_mut().unwrap();
 
-        println!("pushing to shift register. latch={:?}, serial={:?} clock={:?}", latch.pin(), serial.pin(), clock.pin());
+        println!("\tpushing to shift register. latch={:?}, serial={:?} clock={:?}", latch.pin(), serial.pin(), clock.pin());
 
-        latch.set_low();
-        println!("set latch low");
-        let mut b: u16 = 128;
-        while b != 0 {
+        latch.set_low(); // set the latch low before pushing
+        println!("\tset latch low");
+        let mut b: u16 = 128; // initiate the MSB as the first bit to be pushed
+        while b != 0 { // continue as long as we still have to push a bit
             println!("setting bit position {:#010b}", b);
             println!("\tset clock low");
-            clock.set_low();
-            let c: u16 = b & (self.directions as u16);
-            if c == b {
+            clock.set_low(); // set the clock low, we need a rising edge to push
+            let c: u16 = b & (self.directions as u16); // bitwise AND with the bit to push
+            if c == b { // if the directions had a 1 on that bit, it is still 1
                 println!("\tset serial high");
-                serial.set_high();
-            } else {
+                serial.set_high(); // this means that this push should be high
+            } else { // otherwise it was a 0
                 println!("\tset serial low");
-                serial.set_low();
+                serial.set_low(); // so we push a low
             }
             println!("\tset clock high");
-            clock.set_high();
-            b = b >> 1;
+            clock.set_high(); // set the clock high, a rising edge will push the data
+            b = b >> 1; // shift the bit to push to the right
         }        
 
-        println!("directions are set to {:#010b}", self.directions);
-        println!("set latch high");
-        latch.set_high();
+        println!("\tdirections are set to {:#010b}", self.directions);
+        println!("\tset latch high");
+        latch.set_high(); // once all bits are pushed, store in memory by opening the latch
 
-        println!("latch.is_high={:?}\n clock.is_high={:?}\n serial.is_high={:?}", latch.is_set_high(), clock.is_set_high(), serial.is_set_high());
+        println!("\tlatch.is_high={:?}\n\tclock.is_high={:?}\n\tserial.is_high={:?}", latch.is_set_high(), clock.is_set_high(), serial.is_set_high());
 
         return Ok(());
     }
 
+    /// Starts a motor using a configuration. Used internally to unify the 
+    /// process of starting a motor over all public accessors.
     fn start_motor(&mut self, n: usize, cfg: MotorConfig) -> Result<(), BoardError> {
         if n < 1 || n > 4 {
             return Err(BoardError::MotorError(MotorError::MotorIndexOutOfBounds));
@@ -143,15 +170,17 @@ impl AMSBoard {
             return Err(BoardError::MotorError(MotorError::MotorNotFound));
         }
         
-        self.update_shift_register();
-        let motor: &mut Motor = self.motors[n - 1].as_mut().unwrap();
+        self.update_shift_register(); // first update the shift register
+        let motor: &mut Motor = self.motors[n - 1].as_mut().unwrap(); // retrieve the motor
         
         println!("starting motor");
-        motor.start(cfg);
+        motor.start(cfg); // start the motor with the configuration
 
         return Ok(());
     }
     
+    /// Returns a mutable reference to the motor that is requested. If there
+    /// is no motor found, a MotorError is returned.
     pub fn get_motor(&mut self, n: usize) -> Result<&mut Motor, MotorError> {
         if n < 1 || n > 4 {
             return Err(MotorError::MotorIndexOutOfBounds);
@@ -164,6 +193,8 @@ impl AMSBoard {
         }
     }
 
+    /// Sets a motor slot of the board. Use the M slots on the board to 
+    /// indicate motors, since the directions are tied to these slots.
     pub fn set_motor(&mut self, m: Motor, n: usize) -> Result<bool, MotorError> {
         if n < 1 || n > 4 {
             return Err(MotorError::MotorIndexOutOfBounds);
@@ -176,6 +207,9 @@ impl AMSBoard {
         return Ok(true);
     }
 
+    /// Set the shift register pins of the board. Without the shift register
+    /// there is no addressing motors since the shift register is reset on 
+    /// every restart, thus all motors will stall.
     pub fn set_shift_register_pins(&mut self, ser: u8, clk: u8, lat: u8) {
         let gpio_res: Result<Gpio, GpioError> = Gpio::new(); 
         let gpio = match gpio_res {
@@ -204,11 +238,15 @@ impl AMSBoard {
         };
     }
 
+    /// Returns the directions of the board. This is the byte that contains
+    /// the directions of all motors. Note that they are not calculated when
+    /// you call this method, so this has to be done by the user.
     pub fn get_directions(&self) -> u8 {
         println!("retrieving directions");
         return self.directions; 
     }
 
+    /// Inverts the direction of the given motor.
     pub fn invert_motor_direction(&mut self, m: usize) {
         println!("inverting motor directions");
         match &mut self.motors[m - 1] {
@@ -217,35 +255,42 @@ impl AMSBoard {
         };
 
         self.update_directions();
+        self.update_shift_register();
     }
     
+    /// Changes the specified motor to the specified direction.
     pub fn change_motor_direction(&mut self, p: usize, d: Direction) -> Result<(), MotorError> {
         println!("change motor directions of motor {:?} to {:?}", p, d);
         match &mut self.motors[p - 1] {
             Some(motor) => {
                 motor.set_direction(d);
                 self.update_directions();
+                self.update_shift_register();
                 return Ok(());
             },
             _ => return Err(MotorError::MotorNotFound),
         };
     }
 
+    /// Starts a specified motor with a specified configuration.
     pub fn start_motor_config(&mut self, n: usize, mc: MotorConfig) -> Result<(), BoardError> {
         println!("start motor {:?} with config {:?}", n, mc);
         return self.start_motor(n, mc);
     }
 
+    /// Starts a specified motor using a pulse cycle and pusle width.
     pub fn start_motor_pwm(&mut self, n: usize, cycle: Duration, width: Duration) -> Result<(), BoardError> {
         println!("start motor {:?} with pwm cycle {:?} and width {:?}", n, cycle, width);
         return self.start_motor(n, MotorConfig::new_pwm(cycle, width));
     }
 
+    /// Starts a specified motor on full speed.
     pub fn start_motor_full(&mut self, n: usize) -> Result<(), BoardError> {
         println!("start motor {:?} at full speed", n);
         return self.start_motor(n, MotorConfig::new_full());
     }
 
+    /// Stops a specified motor gracefully.
     pub fn stop_motor(&mut self, n: usize) -> Result<(), BoardError> { 
         if n < 1 || n > 4 {
             return Err(BoardError::MotorError(MotorError::MotorIndexOutOfBounds));
