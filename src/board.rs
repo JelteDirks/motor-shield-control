@@ -307,6 +307,9 @@ impl AMSBoard {
         return Ok(());
     }
 
+    /// Tests a specified range for a motor using a pulse width and cycle.
+    /// The motor should first be set on the board before a test can be
+    /// executed.
     pub fn test_motor_range(&mut self, n: usize, cycle:Duration, low:Duration, up:Duration, step:Duration) {
         if n < 1 || n > 4 {
             panic!("index out of bounds");

@@ -2,13 +2,18 @@ use rppal::gpio::{OutputPin, Gpio, Error as GpioError};
 use core::time::Duration;
 use std::thread::sleep;
 
+/// The motor structure.
 pub struct Motor {
+    /// The pin of the motor.
     pub pin: Option<OutputPin>, 
+    /// The direction of the motor, as an enum.
     direction: Direction,
+    /// The status of the motor, for logging purposes.
     status: Status,
 }
 
 impl Motor {
+    /// Creates a new motor without a pin set.
     pub fn new() -> Motor {
         println!("created new motor");
         return Motor {
@@ -18,6 +23,7 @@ impl Motor {
         }
     }
 
+    /// Tests a range of a motor using pulse width and cycle.
     pub fn test_range(&mut self, cycle: Duration, low: Duration, up: Duration, step: Duration) {
         println!("testing motor pwm range");
         let output_pin: &mut OutputPin = match self.pin.as_mut() {
@@ -33,6 +39,9 @@ impl Motor {
         }
     }
 
+    /// Returns whether or not the motor is running. This uses the enum that is
+    /// created when the motor is created. The best way to see the status of 
+    /// the motor is by extracting the information out of the pin.
     pub fn is_running(&self) -> bool {
         println!("check if motor is running: {:?} ", self.status);
         match self.status {
@@ -42,6 +51,8 @@ impl Motor {
         }
     }
 
+    /// Inverts the direction of a motor. Keep in mind that this only sets the
+    /// direction enum of the motor.
     pub fn invert_direction(&mut self) {
         println!("switching direction");
         match self.get_direction() {
@@ -50,11 +61,13 @@ impl Motor {
         };
     }
 
+    /// Sets the motor to a specified direction.
     pub fn set_direction(&mut self, d: Direction) {
         println!("setting direction to {:?}", d);
         self.direction = d;
     }
 
+    /// Sets the pin of this motor.
     pub fn set_pin(&mut self, p: u8) -> Result<(), GpioError> {
         println!("setting motor pin to: {:?}", p);
         let gpio = Gpio::new();
@@ -73,21 +86,27 @@ impl Motor {
         return Ok(());
     }
 
+    /// Returns the directions of this motor.
     pub fn get_direction(&self) -> Direction {
         println!("retrieving direction");
         return self.direction;
     }
 
+    /// Returns the status of this board.
     pub fn get_status(&self) -> Status {
         println!("getting status");
         return self.status;
     }
 
+    /// Sets the status of this board.
     pub fn set_status(&mut self, s: Status) {
         println!("set status to {:?}", s);
         self.status = s;
     }
 
+    /// Starts this motor using the given configuration. The pin has to be set
+    /// for this. If the configuration contains `full=true`, the motor will be
+    /// run at full speed regardless of the pusle width settings.
     pub fn start(&mut self, mc: MotorConfig) -> Result<(), MotorError> {
         if self.pin.is_none() {
             return Err(MotorError::PinNotSet);
@@ -112,6 +131,7 @@ impl Motor {
         return Ok(());
     }
 
+    /// Stops the motor from running immediately.
     pub fn stop(&mut self) -> Result<(), MotorError> {
         if self.pin.is_none() {
             return Err(MotorError::PinNotSet);
@@ -134,7 +154,9 @@ pub struct MotorConfig {
     full: bool
 }
 
+/// Motor configuration structure.
 impl MotorConfig {
+    /// Returns a new config with the cycle and width set.
     pub fn new_pwm(c: Duration, w: Duration) -> MotorConfig {
         return MotorConfig {
             cycle: c,
@@ -143,6 +165,7 @@ impl MotorConfig {
         }
     }
 
+    /// Rerturns a new config with the full property set to true.
     pub fn new_full() -> MotorConfig {
         return MotorConfig {
             cycle: Duration::from_millis(100),
